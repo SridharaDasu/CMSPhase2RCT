@@ -1,0 +1,5 @@
+ip/
+*.directive
+*.jou
+*.log
+build/
