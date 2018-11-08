@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "../../hls_algo/src/algo_unpacked.h"
+#include "../../hls_algo/src/algo_unpacked.h"   // This is where you should have had hls_algo - if not find the header file and fix this - please do not copy this file as that defines the interface
 #include "ClusterFinder.hh"
 
 const uint16_t NCrystalsPerLink = 11; // Bits 16-31, 32-47, ..., 176-191, keeping range(15, 0) unused
@@ -20,24 +20,6 @@ const uint16_t MaxCrystals = N_CH_IN * NCrystalsPerLink;
  * algorithm use.
  *
  */
-
-/*
-static int link_idx[NCaloLayer1Eta*NCaloLayer1Phi*NCrystalsPerEtaPhi*NCrystalsPerEtaPhi];
-static int bitLo[NCaloLayer1Eta*NCaloLayer1Phi*NCrystalsPerEtaPhi*NCrystalsPerEtaPhi];
-static int bitHi[NCaloLayer1Eta*NCaloLayer1Phi*NCrystalsPerEtaPhi*NCrystalsPerEtaPhi];
-
-static void calculateArrayIndices() {
-  static bool first = true;
-  if(first) {
-    for(int crystalID = 0; crystalID < NCaloLayer1Eta * NCaloLayer1Phi * NCrystalsPerEtaPhi * NCrystalsPerEtaPhi; crystalID++) {
-      link_idx[crystalID] = crystalID / NCrystalsPerLink;
-      bitLo[crystalID] = ((crystalID - link_idx[crystalID] * NCrystalsPerLink) % NCrystalsPerLink + 1) * 16;
-      bitHi[crystalID] = bitLo[crystalID] + 15;
-      printf("crystals[%3.3d] = link_in[%2.2d].range(%3.3d, %3.3d);\n", crystalID, link_idx[crystalID], bitHi[crystalID], bitLo[crystalID]);
-    }
-    first = false;
-  }
-*/
 
 void algo_unpacked(ap_uint<192> link_in[N_CH_IN], ap_uint<192> link_out[N_CH_OUT]) {
 
@@ -104,10 +86,12 @@ void algo_unpacked(ap_uint<192> link_in[N_CH_IN], ap_uint<192> link_out[N_CH_OUT
     int bLo5 = bHi4 + 1;
     int bHi5 = bLo5 + 15;
     link_out[olink].range(bHi5,bLo5) = ap_uint<16>(sortedCluster_ET[item]);
+    int bLo6 = bHi5 + 1;
+    link_out[olink].range(191,bLo6) = 0;
     if(first) printf("link_out[%d].range(%d, %d) = ap_uint<16>(sortedCluster_ET[%d]) = %d;\n", olink, bHi5, bLo5, item, sortedCluster_ET[item]);
   }
  idxLoop: for (int idx = olink + 1; idx < N_CH_OUT; idx++) {
-    link_out[idx] = 0xDEADBEEF;
+    link_out[idx] = 0;
   }
   if(first) first = false;
 #else
