@@ -5,7 +5,7 @@ This project uses CTP7-HLS from Ales Svetek
 
 The setup instructions are:
 
-'''bash
+```bash
 
 mkdir -p /data/$USER/CMSPhase2HLS
 cd /data/$USER/CMSPhase2HLS
@@ -29,4 +29,4 @@ make
 
 head -100 ip/algo_top_csynth.rpt
 
-'''
+```
