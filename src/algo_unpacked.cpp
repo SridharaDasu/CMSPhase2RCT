@@ -69,29 +69,38 @@ void algo_unpacked(ap_uint<192> link_in[N_CH_IN], ap_uint<192> link_out[N_CH_OUT
     int word = item % 3;
     int bLo1 = word * 32 + 32;
     int bHi1 = bLo1 + 2;
-    link_out[olink].range(bHi1,bLo1) = ap_uint<3>(peakEta[item]);
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+      link_out[o].range(bHi1,bLo1) = ap_uint<3>(peakEta[item]);
+    }
     if(first) printf("link_out[%d].range(%d, %d) = ap_uint<3>(peakEta[%d]);\n", olink, bHi1, bLo1, item);
     int bLo2 = bHi1 + 1;
     int bHi2 = bLo2 + 2;
-    link_out[olink].range(bHi2,bLo2) = ap_uint<3>(peakPhi[item]);
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+      link_out[o].range(bHi2,bLo2) = ap_uint<3>(peakPhi[item]);
+    }
     if(first) printf("link_out[%d].range(%d, %d) = ap_uint<3>(peakPhi[%d]);\n", olink, bHi2, bLo2, item);
     int bLo3 = bHi2 + 1;
     int bHi3 = bLo3 + 5;
-    link_out[olink].range(bHi3,bLo3) = ap_uint<6>(sortedPeak_Eta[item]);
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+      link_out[o].range(bHi3,bLo3) = ap_uint<6>(sortedPeak_Eta[item]);
+    }
     if(first) printf("link_out[%d].range(%d, %d) = ap_uint<6>(sortedPeak_Eta[%d]);\n", olink, bHi3, bLo3, item);
     int bLo4 = bHi3 + 1;
     int bHi4 = bLo4 + 3;
-    link_out[olink].range(bHi4,bLo4) = ap_uint<4>(sortedPeak_Phi[item]);
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+      link_out[o].range(bHi4,bLo4) = ap_uint<4>(sortedPeak_Phi[item]);
+    }
     if(first) printf("link_out[%d].range(%d, %d) = ap_uint<4>(sortedPeak_Phi[%d]);\n", olink, bHi4, bLo4, item);
     int bLo5 = bHi4 + 1;
     int bHi5 = bLo5 + 15;
-    link_out[olink].range(bHi5,bLo5) = ap_uint<16>(sortedCluster_ET[item]);
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+      link_out[o].range(bHi5,bLo5) = ap_uint<16>(sortedCluster_ET[item]);
+    }
     int bLo6 = bHi5 + 1;
-    link_out[olink].range(191,bLo6) = 0;
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+      link_out[o].range(191,bLo6) = 0;
+    }
     if(first) printf("link_out[%d].range(%d, %d) = ap_uint<16>(sortedCluster_ET[%d]) = %d;\n", olink, bHi5, bLo5, item, sortedCluster_ET[item]);
-  }
- idxLoop: for (int idx = olink + 1; idx < N_CH_OUT; idx++) {
-    link_out[idx] = 0;
   }
   if(first) first = false;
 #else
