@@ -24,9 +24,13 @@ cd ../
 
 git clone git@github.com:SridharaDasu/CMSPhase2RCT.git
 cd CMSPhase2RCT
-export CTP7_HLS_RUN_LABEL=test_tpg
+export CTP7_HLS_RUN_LABEL=test_tpg # Test input file is take from this label - default is test_data
+make clean # To remove remants from the previous build 
 make
 
 head -100 ip/algo_top_csynth.rpt
 
 ```
+
+To add a new test input file, please make <label>_inp.txt file in the data directory, and add it to the sources.tcl
+To use a different input file, export CTP7_HLS_RUN_LABEL=<label>
