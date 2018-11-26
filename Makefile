@@ -1,7 +1,5 @@
 #define default target (synthesis without co-simulation)
-target: csyn_nocosim
-
-export TOP_DIR = $(abspath $(PWD)/..)
+target: csyn
 
 #
 ## # Set ARGV, CFLAGs, LDFLAGs
@@ -13,7 +11,7 @@ export LDFLAGS =
 export PROJ_DIR = $(abspath $(PWD))
 export BASE_DIR = $(abspath $(PWD)/..)
 export TOP_DIR  = $(abspath $(PWD)/..)
-#
+
 export HLS_SIM_TOOL = xsim
 
 # # Use top level makefile

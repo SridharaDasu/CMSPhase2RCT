@@ -8,10 +8,11 @@ const uint16_t MaxCrystals = N_CH_IN * NCrystalsPerLink;
 
 //#define ALGO_PASSTHROUGH
 
+
 /*
- * algo_unpacked intercface exposes fully unpacked input and output link data.
+ * algo_unpacked interface exposes fully unpacked input and output link data.
  * This version assumes use of 10G 8b10b links, and thus providing
- * 6x 32b words = 192  bits per BX.
+ * 192  bits per BX (arranged as an arrray of 3x 64 bits)
  *
  * !!! N.B. Do NOT use the first byte (i.e. link_in/out[x].range(7,0) as this
  * portion is reserved for input/output link alignment markers.
@@ -21,13 +22,25 @@ const uint16_t MaxCrystals = N_CH_IN * NCrystalsPerLink;
  *
  */
 
-void algo_unpacked(ap_uint<192> link_in[N_CH_IN], ap_uint<192> link_out[N_CH_OUT]) {
+void algo_unpacked(ap_uint<64> link_in_2d[N_CH_IN][3], ap_uint<64> link_out_2d[N_CH_OUT][3])
+{
+	ap_uint<192> link_in[N_CH_IN];
+	ap_uint<192> link_out[N_CH_IN];
 
-  // !!! Retain these 4 #pragma directives below in your algo_unpacked implementation !!!
-#pragma HLS ARRAY_PARTITION variable=link_in complete dim=1
-#pragma HLS ARRAY_PARTITION variable=link_out complete dim=1
-#pragma HLS PIPELINE II=6
+#pragma HLS ARRAY_PARTITION variable=link_in complete dim=0
+#pragma HLS ARRAY_PARTITION variable=link_out complete dim=0
+#pragma HLS PIPELINE II=1
 #pragma HLS INTERFACE ap_none port=link_out
+
+#pragma HLS ARRAY_PARTITION variable=link_in_2d complete dim=0
+#pragma HLS ARRAY_PARTITION variable=link_out_2d complete dim=0
+
+    for (int idx = 0; idx < N_CH_IN; idx++) {
+#pragma HLS UNROLL
+	link_in[idx].range(63, 0) = link_in_2d[idx][0];
+	link_in[idx].range(127, 64) = link_in_2d[idx][1];
+	link_in[idx].range(191, 128) = link_in_2d[idx][2];
+}
 
 #ifndef ALGO_PASSTHROUGH
   //calculateArrayIndices();
@@ -108,4 +121,11 @@ void algo_unpacked(ap_uint<192> link_in[N_CH_IN], ap_uint<192> link_out[N_CH_OUT
     link_out[idx] = link_in[idx];
   }
 #endif
+
+   for (int idx = 0; idx < N_CH_OUT; idx++) {
+#pragma HLS UNROLL
+	link_out_2d[idx][0] = link_out[idx].range(63, 0);
+	link_out_2d[idx][1] = link_out[idx].range(127, 64);
+	link_out_2d[idx][2] = link_out[idx].range(191, 128);
+}
 }

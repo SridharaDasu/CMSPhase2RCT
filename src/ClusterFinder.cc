@@ -1302,7 +1302,7 @@ void bitonic_1_4(uint16_t Cluster_1_Deposits[16], uint16_t Cluster_1_Eta[16], ui
 
 
 uint16_t getPeakBinOf5(uint16_t et[5], uint16_t etSum) {
-#pragma HLS PIPELINE II=6
+#pragma HLS PIPELINE II=1
 #pragma HLS ARRAY_PARTITION variable=et complete dim=0
   uint16_t iEtSum = 
     (et[0] >> 1)                +  // 0.5xet[0]
@@ -1331,7 +1331,7 @@ bool getClustersin3x4Region(uint16_t crystals_tower[3][4][5][5],
 			    uint16_t SortedPeakPhi[5]) {
   
 
-#pragma HLS PIPELINE II=6
+#pragma HLS PIPELINE II=1
 
 #pragma HLS ARRAY_PARTITION variable=crystals_tower complete dim=0
 #pragma HLS ARRAY_PARTITION variable=peakEta1 complete dim=0
@@ -1448,7 +1448,7 @@ bool getClustersInTower(uint16_t crystals[NCrystalsPerEtaPhi][NCrystalsPerEtaPhi
                         uint16_t *peakPhi,
                         uint16_t *towerET,
                         uint16_t *clusterET) {
-#pragma HLS PIPELINE II=6
+#pragma HLS PIPELINE II=1
 #pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
   uint16_t phiStripSum[NCrystalsPerEtaPhi];
 #pragma HLS ARRAY_PARTITION variable=phiStripSum complete dim=0
@@ -1517,7 +1517,7 @@ uint16_t biggerLR(uint16_t clusterETL, uint16_t clusterETR){
 
 
 //
-#pragma HLS PIPELINE II=6
+#pragma HLS PIPELINE II=1
 
   uint16_t clusterf = 0;
   
@@ -1584,7 +1584,7 @@ bool getClustersInCard(uint16_t crystals[NCaloLayer1Eta*NCaloLayer1Phi*NCrystals
 					   uint16_t SortedPeak_Eta[30],
 					   uint16_t SortedPeak_Phi[30]) {
 
-#pragma HLS PIPELINE II=6
+#pragma HLS PIPELINE II=1
 #pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
 #pragma HLS ARRAY_PARTITION variable=peakEta complete dim=0
 #pragma HLS ARRAY_PARTITION variable=peakPhi complete dim=0
