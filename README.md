@@ -1,10 +1,8 @@
 # CMSPhase2RCT
 CMS Phase2 RCT HLS Project
 
-This project uses CTP7-HLS from Ales Svetek
 
-The setup instructions are:
-
+STEP-1 (starting from scratch):
 ```bash
 
 mkdir -p /data/$USER/CMSPhase2HLS
@@ -18,19 +16,29 @@ mkdir build
 git checkout io_links
 git submodule init; git submodule update
 cd hls_algo
-make
+make ARGV="ones_algo"
+```
 
-cd ../
+STEP-2
+```
+source /data/tools/Xilinx/Vivado/2018.2/settings64.sh
+cd /data/$USER/CMSPhase2HLS/CTP7-HLS
 
 git clone git@github.com:SridharaDasu/CMSPhase2RCT.git
 cd CMSPhase2RCT
-export CTP7_HLS_RUN_LABEL=test_tpg # Test input file is take from this label - default is test_data
 make clean # To remove remants from the previous build 
-make
+make ARGV="<test_vector>" # i.e. make ARGV="ones_algo"
 
 head -100 ip/algo_top_csynth.rpt
 
 ```
 
-To add a new test input file, please make <label>_inp.txt file in the data directory, and add it to the sources.tcl
-To use a different input file, export CTP7_HLS_RUN_LABEL=<label>
+STEP-3
+```
+# Compile post-implementation checkpoint (to be integrated in final bitile)
+make ARGV="<test_vector>" # i.e. make ARGV="ones_algo" dcp
+
+
+```
+
+To add a new test vector set, please make <test_vector>_inp.txt and <test_vector>_out_ref.txt  file in the data directory, and add it to the sources.tcl
