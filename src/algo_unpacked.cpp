@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "../../hls_algo/src/algo_unpacked.h"   // This is where you should have had hls_algo - if not find the header file and fix this - please do not copy this file as that defines the interface
+#include "../../APx_Gen0_Algo/VivadoHls/null_algo/vivado_hls/src/algo_unpacked.h"   // This is where you should have had hls_algo - if not find the header file and fix this - please do not copy this file as that defines the interface
 #include "ClusterFinder.hh"
 
 const uint16_t NCrystalsPerLink = 11; // Bits 16-31, 32-47, ..., 176-191, keeping range(15, 0) unused
