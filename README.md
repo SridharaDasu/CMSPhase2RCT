@@ -26,7 +26,7 @@ STEP-2
 
 source /data/tools/Xilinx/Vivado/2018.2/settings64.sh
 cd /data/$USER/CMSPhase2HLS/
-git clone git@github.com:SridharaDasu/CMSPhase2RCT.git
+git clone -b setup-2018 git@github.com:SridharaDasu/CMSPhase2RCT.git
 cd CMSPhase2RCT
 make clean # To remove remants from the previous build 
 make ARGV="<test_vector>" # i.e. make ARGV="ones_algo"
