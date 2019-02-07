@@ -1,5 +1,2 @@
-ip/
-*.directive
-*.jou
+proj/
 *.log
-build/
