@@ -1,3 +1,4 @@
+##CMSPhase2RCT
 This project uses APxL1TAlgoDev from Ales Svetek (https://github.com/APxL1TAlgoDev)
 
 STEP-1: Vivado HLS 
@@ -26,7 +27,7 @@ cd null_algo_unpacked/vivado_hls #Currently using null_algo_unpacked, make chang
 vivado_hls -f run_hls.tcl #more parameters in section below
 ```
 
-STEP-2: Running your project
+STEP-2: Running RCT Project
 ```
 cd /data/$USER/CMSPhase2HLS/APx_Gen0_Algo/VivadoHls
 git clone -b setup-2018 git@github.com:SridharaDasu/CMSPhase2RCT.git
