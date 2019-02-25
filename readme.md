@@ -32,7 +32,7 @@ STEP-2: Running RCT Project
 cd /data/$USER/CMSPhase2HLS/APx_Gen0_Algo/VivadoHls
 git clone git@github.com:SridharaDasu/CMSPhase2RCT.git
 cd CMSPhase2RCT/vivado_hls
-vivado_hls -f run_hls.tcl synth=0 csim=1 cosim=0 export=0 tv=test_random
+vivado_hls -f run_hls.tcl synth=0 csim=1 cosim=0 export=0 tv=test_random_set1
 ```
 
 STEP-3: Using infra project to generate bit file
@@ -41,10 +41,11 @@ cd /data/$USER/CMSPhase2HLS
 git clone --recursive git@github.com:APxL1TAlgoDev/APx_Gen0_Infra.git (Cloning Infra project)
 cd /data/$USER/CMSPhase2HLS/APx_Gen0_Infra (/scratch/$USER/CMSPhase2HLS/APx_Gen0_Infra)
 mkdir build (for the first time)
-## Edit ruckus.tcl file and provide correct path to your HLS ruckus.tcl file. 
-## (If you are following the format of this README, this path should be /data/$USER/CMSPhase2HLS/APx_Gen0_Algo/VivadoHls/hls_project_name)
+cd firmware
+## Edit ruckus.tcl file and provide correct path to your HLS project directory ruckus.tcl file. 
+## (for eg:  /data/$USER/CMSPhase2HLS/APx_Gen0_Algo/VivadoHls/hls_project_name)
 make clean 
-make (nohup make &> make.log & - to make it run in background)
+make (nohup make >& make.log &)
 ```
 
 
