@@ -8,8 +8,8 @@
 #include <iomanip>
 #include <string>
 
-//#include "algo_unpacked.h"
 #include "../../../../../APx_Gen0_Algo/VivadoHls/null_algo_unpacked/vivado_hls/src/algo_unpacked.h"
+//#include "algo_unpacked.h"
 
 using namespace std;
 
@@ -122,3 +122,4 @@ int main(int argc, char ** argv) {
 		return 0;
 	}
 }
+

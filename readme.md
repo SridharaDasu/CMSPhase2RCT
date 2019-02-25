@@ -30,7 +30,7 @@ vivado_hls -f run_hls.tcl #more parameters in section below
 STEP-2: Running RCT Project
 ```
 cd /data/$USER/CMSPhase2HLS/APx_Gen0_Algo/VivadoHls
-git clone -b setup-2018 git@github.com:SridharaDasu/CMSPhase2RCT.git
+git clone git@github.com:SridharaDasu/CMSPhase2RCT.git
 cd CMSPhase2RCT/vivado_hls
 vivado_hls -f run_hls.tcl synth=0 csim=1 cosim=0 export=0 tv=test_random
 ```

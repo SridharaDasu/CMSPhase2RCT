@@ -2,1306 +2,13 @@
 #include <stdio.h>
 
 #include "ClusterFinder.hh"
+#include "bitonicSorter.hh"
 
 #include <iostream>
 using namespace std;
 
 
-void bitonic32(uint16_t ClusterDeposits[32], uint16_t ClusterEta[32], uint16_t ClusterPhi[32])
-{// sorting blocks of size 32                                                                                                                                                        
-   int temp;
-   // #pragma HLS dataflow                                                                                                                                                              
-   for(int i=0;i<16;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+16])
-      {
-	 temp=ClusterDeposits[i+16];
-	 ClusterDeposits[i+16]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+16];
-	 ClusterEta[i+16]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+16];
-	 ClusterPhi[i+16]=temp;
-      }
-   }
-
-   for(int i=0;i<8;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+8])
-      {
-	 temp=ClusterDeposits[i+8];
-	 ClusterDeposits[i+8]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+8];
-	 ClusterEta[i+8]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+8];
-	 ClusterPhi[i+8]=temp;
-      }
-   }
-
-   for(int i=16;i<24;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+8])
-      {
-	 temp=ClusterDeposits[i+8];
-	 ClusterDeposits[i+8]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+8];
-	 ClusterEta[i+8]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+8];
-	 ClusterPhi[i+8]=temp;
-      }
-   }
-
-   for(int i=0;i<4;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-   for(int i=8;i<12;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-
-
-   for(int i=16;i<20;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-
-   for(int i=24;i<28;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-
-   for(int i=0;i<29;i=i+4)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+2])
-      {
-	 temp=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-      if(ClusterDeposits[i+1]<ClusterDeposits[i+3])
-      {
-	 temp=ClusterDeposits[i+3];
-	 ClusterDeposits[i+3]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i+1];
-	 ClusterEta[i+1]=ClusterEta[i+3];
-	 ClusterEta[i+3]=temp;
-	 temp=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=ClusterPhi[i+3];
-	 ClusterPhi[i+3]=temp;
-      }
-   }
-
-
-
-
-   for(int i=0;i<31;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+1])
-      {
-	 temp=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-
-}
-
-
-void bitonic16(uint16_t ClusterDeposits[32], uint16_t ClusterEta[32], uint16_t ClusterPhi[32])
-{// sorting blocks of size 16                                                                                                                                                        
-   int temp;
-   // #pragma HLS dataflow                                                                                                                                                              
-   for(int i=0;i<8;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+8])
-      {
-	 temp=ClusterDeposits[i+8];
-	 ClusterDeposits[i+8]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+8];
-	 ClusterEta[i+8]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+8];
-	 ClusterPhi[i+8]=temp;
-      }
-
-   }
-
-   for(int i=16;i<24;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+8])
-      {
-	 temp=ClusterDeposits[i+8];
-	 ClusterDeposits[i+8]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+8];
-	 ClusterEta[i+8]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+8];
-	 ClusterPhi[i+8]=temp;
-      }
-
-   }
-
-   for(int i=0;i<4;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-   for(int i=8;i<12;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-   for(int i=16;i<20;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-
-   for(int i=24;i<28;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-
-   for(int i=0;i<13;i=i+4)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+2])
-      {
-	 temp=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-
-      if(ClusterDeposits[i+1]<ClusterDeposits[i+3])
-      {
-	 temp=ClusterDeposits[i+3];
-	 ClusterDeposits[i+3]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i+1];
-	 ClusterEta[i+1]=ClusterEta[i+3];
-	 ClusterEta[i+3]=temp;
-	 temp=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=ClusterPhi[i+3];
-	 ClusterPhi[i+3]=temp;
-      }
-   }
-
-   for(int i=16;i<29;i=i+4)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+2])
-      {
-	 temp=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-
-
-      if(ClusterDeposits[i+1]>ClusterDeposits[i+3])
-      {
-	 temp=ClusterDeposits[i+3];
-	 ClusterDeposits[i+3]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i+1];
-	 ClusterEta[i+1]=ClusterEta[i+3];
-	 ClusterEta[i+3]=temp;
-	 temp=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=ClusterPhi[i+3];
-	 ClusterPhi[i+3]=temp;
-      }
-   }
-
-
-
-   for(int i=0;i<15;i=i+2)
-   {
-#pragma HLS unroll//may be faster if split into two loops                                                                                                                          
-      if(ClusterDeposits[i]<ClusterDeposits[i+1])
-      {
-	 temp=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-
-   }
-
-   for(int i=16;i<31;i=i+2)
-   {
-#pragma HLS unroll//may be faster if split into two loops                                                                                                                          
-      if(ClusterDeposits[i]>ClusterDeposits[i+1])
-      {
-	 temp=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-
-   }
-
-
-   bitonic32(ClusterDeposits,ClusterEta,ClusterPhi);
-}
-
-
-
-void bitonic8(uint16_t ClusterDeposits[32], uint16_t ClusterEta[32], uint16_t ClusterPhi[32])
-{// sorting blocks of size 8                                                                                                                                                         
-   int temp;
-   // #pragma HLS dataflow                                                                                                                                                              
-   for(int i=0;i<4;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   } 
-
-   for(int i=8;i<12;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-
-
-   for(int i=16;i<20;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-   for(int i=24;i<28;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+4])
-      {
-	 temp=ClusterDeposits[i+4];
-	 ClusterDeposits[i+4]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+4];
-	 ClusterEta[i+4]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+4];
-	 ClusterPhi[i+4]=temp;
-      }
-   }
-
-
-   for(int i=0;i<5;i=i+4)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+2])
-      {
-	 temp=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i+2];
-	 ClusterEta[i+2]=ClusterEta[i];
-	 ClusterEta[i]=temp;
-	 temp=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=ClusterPhi[i];
-	 ClusterPhi[i]=temp;
-      }
-      if(ClusterDeposits[i+1]<ClusterDeposits[i+3])
-      {
-	 temp=ClusterDeposits[i+3];
-	 ClusterDeposits[i+3]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i+1];
-	 ClusterEta[i+1]=ClusterEta[i+3];
-	 ClusterEta[i+3]=temp;
-	 temp=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=ClusterPhi[i+3];
-	 ClusterPhi[i+3]=temp;
-      }
-   }
-
-   for(int i=8;i<13;i=i+4)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+2])
-      {
-	 temp=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i+2];
-	 ClusterEta[i+2]=ClusterEta[i];
-	 ClusterEta[i]=temp;
-	 temp=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=ClusterPhi[i];
-	 ClusterPhi[i]=temp;
-      }
-
-      if(ClusterDeposits[i+1]>ClusterDeposits[i+3])
-      {
-	 temp=ClusterDeposits[i+3];
-	 ClusterDeposits[i+3]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i+1];
-	 ClusterEta[i+1]=ClusterEta[i+3];
-	 ClusterEta[i+3]=temp;
-	 temp=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=ClusterPhi[i+3];
-	 ClusterPhi[i+3]=temp;
-      }
-   }
-
-   for(int i=16;i<21;i=i+4)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+2])
-      {
-	 temp=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i+2];
-	 ClusterEta[i+2]=ClusterEta[i];
-	 ClusterEta[i]=temp;
-	 temp=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=ClusterPhi[i];
-	 ClusterPhi[i]=temp;
-      }
-      if(ClusterDeposits[i+1]<ClusterDeposits[i+3])
-      {
-	 temp=ClusterDeposits[i+3];
-	 ClusterDeposits[i+3]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i+1];
-	 ClusterEta[i+1]=ClusterEta[i+3];
-	 ClusterEta[i+3]=temp;
-	 temp=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=ClusterPhi[i+3];
-	 ClusterPhi[i+3]=temp;
-      }
-   }
-
-   for(int i=24;i<29;i=i+4)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+2])
-      {
-	 temp=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i+2];
-	 ClusterEta[i+2]=ClusterEta[i];
-	 ClusterEta[i]=temp;
-	 temp=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=ClusterPhi[i];
-	 ClusterPhi[i]=temp;
-      }
-
-      if(ClusterDeposits[i+1]>ClusterDeposits[i+3])
-      {
-	 temp=ClusterDeposits[i+3];
-	 ClusterDeposits[i+3]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i+1];
-	 ClusterEta[i+1]=ClusterEta[i+3];
-	 ClusterEta[i+3]=temp;
-	 temp=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=ClusterPhi[i+3];
-	 ClusterPhi[i+3]=temp;
-      }
-
-   }
-
-   for(int i=0;i<7;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+1])
-      {
-	 temp=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-   for(int i=8;i<15;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+1])
-      {
-	 temp=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-
-   for(int i=16;i<23;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+1])
-      {
-	 temp=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-   for(int i=24;i<31;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+1])
-      {
-	 temp=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=ClusterDeposits[i];
-	 ClusterDeposits[i]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-
-   bitonic16(ClusterDeposits,ClusterEta,ClusterPhi);
-}
-void bitonic4(uint16_t ClusterDeposits[32], uint16_t ClusterEta[32], uint16_t ClusterPhi[32])
-{
-   int temp;
-   // #pragma HLS dataflow                                                                                                                                                              
-   // comparators in blocks of 4                                                                                                                                                        
-   for(int i=0;i<2;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+2])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-   }
-   for(int i=4;i<6;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+2])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-   }
-   for(int i=8;i<10;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+2])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-   }
-   for(int i=12;i<14;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+2])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-   }
-   for(int i=16;i<18;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+2])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-   }
-
-   for(int i=20;i<22;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+2])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-   }
-   for(int i=24;i<26;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+2])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-   }
-   for(int i=28;i<30;i++)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+2])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+2];
-	 ClusterDeposits[i+2]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+2];
-	 ClusterEta[i+2]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+2];
-	 ClusterPhi[i+2]=temp;
-      }
-   }
-
-   for(int i=0;i<3;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+1])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-   for(int i=4;i<7;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+1])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-
-
-   for(int i=8;i<11;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+1])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-
-   for(int i=12;i<15;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+1])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-   for(int i=16;i<19;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+1])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-
-
-   for(int i=20;i<23;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+1])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-
-
-
-   for(int i=24;i<27;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]<ClusterDeposits[i+1])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-   for(int i=28;i<31;i=i+2)
-   {
-#pragma HLS unroll
-      if(ClusterDeposits[i]>ClusterDeposits[i+1])
-      {temp=ClusterDeposits[i];
-	 ClusterDeposits[i]=ClusterDeposits[i+1];
-	 ClusterDeposits[i+1]=temp;
-	 temp=ClusterEta[i];
-	 ClusterEta[i]=ClusterEta[i+1];
-	 ClusterEta[i+1]=temp;
-	 temp=ClusterPhi[i];
-	 ClusterPhi[i]=ClusterPhi[i+1];
-	 ClusterPhi[i+1]=temp;
-      }
-   }
-
-   bitonic8(ClusterDeposits,ClusterEta,ClusterPhi);
-
-}
-
-void bitonic_1_16(uint16_t Cluster_1_Deposits[16], uint16_t Cluster_1_Eta[16], uint16_t Cluster_1_Phi[16])
-{// sorting blocks of size 16                                                                                                                                                        
-   int temp;
-   // #pragma HLS dataflow                                                                                                                                                              
-   for(int i=0;i<8;i++)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+8])
-      {
-	 temp=Cluster_1_Deposits[i+8];
-	 Cluster_1_Deposits[i+8]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+8];
-	 Cluster_1_Eta[i+8]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+8];
-	 Cluster_1_Phi[i+8]=temp;
-      }
-
-   }
-
-
-   for(int i=0;i<4;i++)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+4])
-      {
-	 temp=Cluster_1_Deposits[i+4];
-	 Cluster_1_Deposits[i+4]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+4];
-	 Cluster_1_Eta[i+4]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+4];
-	 Cluster_1_Phi[i+4]=temp;
-      }
-   }
-
-
-   for(int i=8;i<12;i++)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+4])
-      {
-	 temp=Cluster_1_Deposits[i+4];
-	 Cluster_1_Deposits[i+4]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+4];
-	 Cluster_1_Eta[i+4]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+4];
-	 Cluster_1_Phi[i+4]=temp;
-      }
-   }
-
-
-   for(int i=0;i<13;i=i+4)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+2])
-      {
-	 temp=Cluster_1_Deposits[i+2];
-	 Cluster_1_Deposits[i+2]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+2];
-	 Cluster_1_Eta[i+2]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+2];
-	 Cluster_1_Phi[i+2]=temp;
-      }
-
-      if(Cluster_1_Deposits[i+1]<Cluster_1_Deposits[i+3])
-      {
-	 temp=Cluster_1_Deposits[i+3];
-	 Cluster_1_Deposits[i+3]=Cluster_1_Deposits[i+1];
-	 Cluster_1_Deposits[i+1]=temp;
-	 temp=Cluster_1_Eta[i+1];
-	 Cluster_1_Eta[i+1]=Cluster_1_Eta[i+3];
-	 Cluster_1_Eta[i+3]=temp;
-	 temp=Cluster_1_Phi[i+1];
-	 Cluster_1_Phi[i+1]=Cluster_1_Phi[i+3];
-	 Cluster_1_Phi[i+3]=temp;
-      }
-   }
-
-
-   for(int i=0;i<15;i=i+2)
-   {
-#pragma HLS unroll//may be faster if split into two loops                                                                                                                          
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+1])
-      {
-	 temp=Cluster_1_Deposits[i+1];
-	 Cluster_1_Deposits[i+1]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+1];
-	 Cluster_1_Eta[i+1]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+1];
-	 Cluster_1_Phi[i+1]=temp;
-      }
-
-   }
-
-
-}
-
-
-
-void bitonic_1_8(uint16_t Cluster_1_Deposits[16], uint16_t Cluster_1_Eta[16], uint16_t Cluster_1_Phi[16])
-{// sorting blocks of size 8                                                                                                                                                         
-   int temp;
-   // #pragma HLS dataflow                                                                                                                                                              
-   for(int i=0;i<4;i++)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+4])
-      {
-	 temp=Cluster_1_Deposits[i+4];
-	 Cluster_1_Deposits[i+4]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+4];
-	 Cluster_1_Eta[i+4]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+4];
-	 Cluster_1_Phi[i+4]=temp;
-      }
-   }
-   for(int i=8;i<12;i++)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]>Cluster_1_Deposits[i+4])
-      {
-	 temp=Cluster_1_Deposits[i+4];
-	 Cluster_1_Deposits[i+4]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+4];
-	 Cluster_1_Eta[i+4]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+4];
-	 Cluster_1_Phi[i+4]=temp;
-      }
-   }
-
-
-   for(int i=0;i<5;i=i+4)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+2])
-      {
-	 temp=Cluster_1_Deposits[i+2];
-	 Cluster_1_Deposits[i+2]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i+2];
-	 Cluster_1_Eta[i+2]=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=temp;
-	 temp=Cluster_1_Phi[i+2];
-	 Cluster_1_Phi[i+2]=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=temp;
-      }
-      if(Cluster_1_Deposits[i+1]<Cluster_1_Deposits[i+3])
-      {
-	 temp=Cluster_1_Deposits[i+3];
-	 Cluster_1_Deposits[i+3]=Cluster_1_Deposits[i+1];
-	 Cluster_1_Deposits[i+1]=temp;
-	 temp=Cluster_1_Eta[i+1];
-	 Cluster_1_Eta[i+1]=Cluster_1_Eta[i+3];
-	 Cluster_1_Eta[i+3]=temp;
-	 temp=Cluster_1_Phi[i+1];
-	 Cluster_1_Phi[i+1]=Cluster_1_Phi[i+3];
-	 Cluster_1_Phi[i+3]=temp;
-      }
-   }
-
-
-
-   for(int i=8;i<13;i=i+4)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]>Cluster_1_Deposits[i+2])
-      {
-	 temp=Cluster_1_Deposits[i+2];
-	 Cluster_1_Deposits[i+2]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i+2];
-	 Cluster_1_Eta[i+2]=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=temp;
-	 temp=Cluster_1_Phi[i+2];
-	 Cluster_1_Phi[i+2]=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=temp;
-      }
-      if(Cluster_1_Deposits[i+1]>Cluster_1_Deposits[i+3])
-      {
-	 temp=Cluster_1_Deposits[i+3];
-	 Cluster_1_Deposits[i+3]=Cluster_1_Deposits[i+1];
-	 Cluster_1_Deposits[i+1]=temp;
-	 temp=Cluster_1_Eta[i+1];
-	 Cluster_1_Eta[i+1]=Cluster_1_Eta[i+3];
-	 Cluster_1_Eta[i+3]=temp;
-	 temp=Cluster_1_Phi[i+1];
-	 Cluster_1_Phi[i+1]=Cluster_1_Phi[i+3];
-	 Cluster_1_Phi[i+3]=temp;
-      }
-   }
-
-
-   for(int i=0;i<7;i=i+2)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+1])
-      {
-	 temp=Cluster_1_Deposits[i+1];
-	 Cluster_1_Deposits[i+1]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+1];
-	 Cluster_1_Eta[i+1]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+1];
-	 Cluster_1_Phi[i+1]=temp;
-      }
-   }
-   for(int i=8;i<15;i=i+2)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]>Cluster_1_Deposits[i+1])
-      {
-	 temp=Cluster_1_Deposits[i+1];
-	 Cluster_1_Deposits[i+1]=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+1];
-	 Cluster_1_Eta[i+1]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+1];
-	 Cluster_1_Phi[i+1]=temp;
-      }
-   }
-   bitonic_1_16(Cluster_1_Deposits,Cluster_1_Eta,Cluster_1_Phi);
-}
-
-
-
-
-void bitonic_1_4(uint16_t Cluster_1_Deposits[16], uint16_t Cluster_1_Eta[16], uint16_t Cluster_1_Phi[16])
-{
-   int temp;
-   // #pragma HLS dataflow                                                                                                                                                              
-   // comparators in blocks of 4                                                                                                                                                        
-   for(int i=0;i<2;i++)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+2])
-      {temp=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=Cluster_1_Deposits[i+2];
-	 Cluster_1_Deposits[i+2]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+2];
-	 Cluster_1_Eta[i+2]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+2];
-	 Cluster_1_Phi[i+2]=temp;
-      }
-   }
-   for(int i=4;i<6;i++)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]>Cluster_1_Deposits[i+2])
-      {temp=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=Cluster_1_Deposits[i+2];
-	 Cluster_1_Deposits[i+2]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+2];
-	 Cluster_1_Eta[i+2]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+2];
-	 Cluster_1_Phi[i+2]=temp;
-      }
-   }
-   for(int i=8;i<10;i++)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+2])
-      {temp=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=Cluster_1_Deposits[i+2];
-	 Cluster_1_Deposits[i+2]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+2];
-	 Cluster_1_Eta[i+2]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+2];
-	 Cluster_1_Phi[i+2]=temp;
-      }
-   }
-
-
-   for(int i=12;i<14;i++)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]>Cluster_1_Deposits[i+2])
-      {temp=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=Cluster_1_Deposits[i+2];
-	 Cluster_1_Deposits[i+2]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+2];
-	 Cluster_1_Eta[i+2]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+2];
-	 Cluster_1_Phi[i+2]=temp;
-      }
-   }
-
-   for(int i=0;i<3;i=i+2)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+1])
-      {temp=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=Cluster_1_Deposits[i+1];
-	 Cluster_1_Deposits[i+1]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+1];
-	 Cluster_1_Eta[i+1]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+1];
-	 Cluster_1_Phi[i+1]=temp;
-      }
-   }
-
-
-   for(int i=4;i<7;i=i+2)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]>Cluster_1_Deposits[i+1])
-      {temp=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=Cluster_1_Deposits[i+1];
-	 Cluster_1_Deposits[i+1]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+1];
-	 Cluster_1_Eta[i+1]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+1];
-	 Cluster_1_Phi[i+1]=temp;
-      }
-   }
-
-   for(int i=8;i<11;i=i+2)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]<Cluster_1_Deposits[i+1])
-      {temp=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=Cluster_1_Deposits[i+1];
-	 Cluster_1_Deposits[i+1]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+1];
-	 Cluster_1_Eta[i+1]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+1];
-	 Cluster_1_Phi[i+1]=temp;
-      }
-   }
-   for(int i=12;i<15;i=i+2)
-   {
-#pragma HLS unroll
-      if(Cluster_1_Deposits[i]>Cluster_1_Deposits[i+1])
-      {temp=Cluster_1_Deposits[i];
-	 Cluster_1_Deposits[i]=Cluster_1_Deposits[i+1];
-	 Cluster_1_Deposits[i+1]=temp;
-	 temp=Cluster_1_Eta[i];
-	 Cluster_1_Eta[i]=Cluster_1_Eta[i+1];
-	 Cluster_1_Eta[i+1]=temp;
-	 temp=Cluster_1_Phi[i];
-	 Cluster_1_Phi[i]=Cluster_1_Phi[i+1];
-	 Cluster_1_Phi[i+1]=temp;
-      }
-   }
-
-   bitonic_1_8(Cluster_1_Deposits,Cluster_1_Eta,Cluster_1_Phi);
-
-}
-
-
-
-uint16_t getPeakBinOf5(uint16_t et[5], uint16_t etSum) {
+uint16_t getPeakBinOf5(uint16_t et[NCrystalsPerEtaPhi], uint16_t etSum) {
 #pragma HLS PIPELINE II=1
 #pragma HLS ARRAY_PARTITION variable=et complete dim=0
    uint16_t iEtSum = 
@@ -1319,134 +26,15 @@ uint16_t getPeakBinOf5(uint16_t et[5], uint16_t etSum) {
    return iAve;
 }
 
-
-
-bool getClustersin3x4Region(uint16_t crystals_tower[3][4][5][5],
-      uint16_t peakEta1[3][4],
-      uint16_t peakPhi1[3][4],
-      uint16_t towerET1[3][4],
-      uint16_t clusterET1[3][4],
-      uint16_t SortedClusterET[5],
-      uint16_t SortedPeakEta[5],
-      uint16_t SortedPeakPhi[5]){
-
-
-#pragma HLS PIPELINE II=1
-
-#pragma HLS ARRAY_PARTITION variable=crystals_tower complete dim=0
-#pragma HLS ARRAY_PARTITION variable=peakEta1 complete dim=0
-#pragma HLS ARRAY_PARTITION variable=peakPhi1 complete dim=0
-#pragma HLS ARRAY_PARTITION variable=towerET1 complete dim=0
-#pragma HLS ARRAY_PARTITION variable=clusterET1 complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedClusterET complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedPeakEta complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedPeakPhi complete dim=0
-
-   //Here is array size is 16 instead of 12 to bit sort (order 2^n)
-   uint16_t peakEta2[16];
-   uint16_t peakPhi2[16];
-   uint16_t clusterET2[16];
-
-#pragma HLS ARRAY_PARTITION variable=peakEta2 complete dim=0
-#pragma HLS ARRAY_PARTITION variable=peakPhi2 complete dim=0
-#pragma HLS ARRAY_PARTITION variable=clusterET2 complete dim=0
-
-
-   for(int i=0;i<16;i++)
-   {
-#pragma HLS UNROLL      
-      peakEta2[i]=0;
-      peakPhi2[i]=0;
-      clusterET2[i]=0;
-
-   }
-
-   int i=0;
-   for(int tPhi = 0; tPhi < 4; tPhi++) {
-#pragma HLS UNROLL
-      for(int tEta = 0; tEta < 3; tEta++) {
-#pragma HLS UNROLL
-	 getClustersInTower(crystals_tower[tEta][tPhi], 
-	       &peakEta1[tEta][tPhi],
-	       &peakPhi1[tEta][tPhi],
-	       &towerET1[tEta][tPhi],
-	       &clusterET1[tEta][tPhi]);
-
-	 //	 if(clusterET1[tEta][tPhi] > 0) 
-	 std::cout<<"tower eta: " << tEta<<" tower phi: "<<tPhi<<" peakEta1: "<<peakEta1[tEta][tPhi]<<" peakPhi1: "<<peakPhi1[tEta][tPhi]<<" clusterET: "<<clusterET1[tEta][tPhi]<<std::endl;
-	 peakEta2[i]= peakEta1[tEta][tPhi];
-	 peakPhi2[i]= peakPhi1[tEta][tPhi];
-
-	 clusterET2[i] = clusterET1[tEta][tPhi];
-
-	 i++;
-      }
-   }
-
-
-   // WHY is this loop needed when already initialized to ZERO.
-   for(int i=13;i<16;i++)
-   {
-#pragma HLS UNROLL
-      peakEta2[i]=0;
-      peakPhi2[i]=0;
-      clusterET2[i]=0;
-   }
-
-
-   uint16_t xx;
-
-   for(int i=0;i<16;i=i+4)
-   {
-#pragma HLS unroll
-      if(clusterET2[i]<clusterET2[i+1])
-      {xx=clusterET2[i+1];
-	 clusterET2[i+1]=clusterET2[i];
-	 clusterET2[i]=xx;
-	 xx=peakEta2[i];
-	 peakEta2[i]=peakEta2[i+1];
-	 peakEta2[i+1]=xx;
-	 xx=peakPhi2[i];
-	 peakPhi2[i]=peakPhi2[i+1];
-	 peakPhi2[i+1]=xx;
-      }
-
-      if(clusterET2[i+2]>clusterET2[i+3])
-      {xx=clusterET2[i+3];
-	 clusterET2[i+3]=clusterET2[i+2];
-	 clusterET2[i+2]=xx;
-	 xx=peakEta2[i+2];
-	 peakEta2[i+2]=peakEta2[i+3];
-	 peakEta2[i+3]=xx;
-	 xx=peakPhi2[i+2];
-	 peakPhi2[i+2]=peakPhi2[i+3];
-	 peakPhi2[i+3]=xx;
-
-      }
-   }
-
-
-   // passing control to second level of quaternary comparators                                                                                                                     
-   bitonic_1_4(clusterET2,peakEta2,peakPhi2);
-
-   for(int i=0;i<5;i++)
-   {
-      SortedClusterET[i] = clusterET2[i];
-      SortedPeakEta[i]= peakEta2[i];
-      SortedPeakPhi[i]= peakPhi2[i];
-   }
-
-
-   return true; 
-}
-
 bool getClustersInTower(uint16_t crystals[NCrystalsPerEtaPhi][NCrystalsPerEtaPhi],
       uint16_t *peakEta,
       uint16_t *peakPhi,
       uint16_t *towerET,
       uint16_t *clusterET) {
+
 #pragma HLS PIPELINE II=1
 #pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
+
    uint16_t phiStripSum[NCrystalsPerEtaPhi];
 #pragma HLS ARRAY_PARTITION variable=phiStripSum complete dim=0
    for(int phi = 0; phi < NCrystalsPerEtaPhi; phi++) {
@@ -1456,8 +44,7 @@ bool getClustersInTower(uint16_t crystals[NCrystalsPerEtaPhi][NCrystalsPerEtaPhi
 #pragma HLS UNROLL
 	 phiStripSum[phi] += crystals[eta][phi];
       }
-      //if(_test && phiStripSum[phi]>0)std::cout<<"phiStripSum["<<phi<<"]: "<<phiStripSum[phi]<<std::endl;
-   }
+   }   
    uint16_t etaStripSum[NCrystalsPerEtaPhi];
 #pragma HLS ARRAY_PARTITION variable=etaStripSum complete dim=0
    for(int eta = 0; eta < NCrystalsPerEtaPhi; eta++) {
@@ -1467,18 +54,17 @@ bool getClustersInTower(uint16_t crystals[NCrystalsPerEtaPhi][NCrystalsPerEtaPhi
 #pragma HLS UNROLL
 	 etaStripSum[eta] += crystals[eta][phi];
       }
-      //if(_test && etaStripSum[eta]>0)std::cout<<"etaStripSum["<<eta<<"]: "<<etaStripSum[eta]<<std::endl;
-   }
+   }   
    // Large cluster ET is the ET of the full tower
-   *towerET = 0;
+   *towerET=0;
    for(int phi = 0; phi < NCrystalsPerEtaPhi; phi++) {
 #pragma HLS UNROLL
       *towerET += phiStripSum[phi];
-   }
-   //if(_test)std::cout<<"Tower Et: "<<*towerET<<std::endl;
+   }  
+
    *peakEta = getPeakBinOf5(etaStripSum, *towerET);
    *peakPhi = getPeakBinOf5(phiStripSum, *towerET);
-   //if(_test)std::cout<<"Peak Eta: "<< *peakEta << "  Peak Phi:"<< *peakPhi << std::endl;
+
    // Small cluster ET is just the 3x5 around the peak
    *clusterET = 0;
    for(int dEta = -1; dEta <= 1; dEta++) {
@@ -1487,56 +73,13 @@ bool getClustersInTower(uint16_t crystals[NCrystalsPerEtaPhi][NCrystalsPerEtaPhi
       if(eta >= 0 && eta < NCrystalsPerEtaPhi) {
 	 *clusterET += etaStripSum[eta];
       }
-   }
-   ////subCluster 2X5L
-   //  uint16_t clusterETL ;
-   //  clusterETL =0;
-   //	for(int dEtaL = -1; dEtaL <= 0; dEtaL++) {
-   //#pragma HLS UNROLL
-   //	  int eta = *peakEta + dEtaL;
-   //	  if(eta >= 0 && eta < NCrystalsPerEtaPhi){
-   //	    clusterETL += etaStripSum[eta];
-   //	  }
-   //	}
-   //	//subCluster 2X5R
-   //	uint16_t clusterETR ;
-   //	clusterETR =0;
-   //	for(int dEtaR = 0; dEtaR <= 1; dEtaR++) {
-   //#pragma HLS UNROLL
-   //	  int eta = *peakEta + dEtaR;
-   //	  if(eta >= 0 && eta < NCrystalsPerEtaPhi){
-   //	    clusterETR += etaStripSum[eta];
-   //	  }
-   //	}
-   //	//cluster2X5 is equal to max of 2X5L or 2X5R
-   //	*clusteret2x5 = biggerLR(clusterETL, clusterETR);
-   //	
+   }  
+
    return true;
 }
 
-/*
-   NOT USED AS OF NOW
-   uint16_t biggerLR(uint16_t clusterETL, uint16_t clusterETR){
-
-
-//
-#pragma HLS PIPELINE II=1
-
-uint16_t clusterf = 0;
-
-if(clusterETL>clusterETR)
-clusterf = clusterETL;
-
-else
-clusterf = clusterETR;
-
-return clusterf;
-}
-
-*/
-
-
-bool mergeClusters(uint16_t ieta1, uint16_t iphi1, uint16_t itet1, uint16_t icet1,
+bool mergeClusters(
+      uint16_t ieta1, uint16_t iphi1, uint16_t itet1, uint16_t icet1,
       uint16_t ieta2, uint16_t iphi2, uint16_t itet2, uint16_t icet2,
       uint16_t *eta1, uint16_t *phi1, uint16_t *tet1, uint16_t *cet1,
       uint16_t *eta2, uint16_t *phi2, uint16_t *tet2, uint16_t *cet2) {
@@ -1564,7 +107,7 @@ bool mergeClusters(uint16_t ieta1, uint16_t iphi1, uint16_t itet1, uint16_t icet
 	 *cet1 = 0;
 	 *tet1 = itet1 - icet1;
       }
-   }
+   }   
    else {
       *eta1 = ieta1;
       *phi1 = iphi1;
@@ -1574,277 +117,440 @@ bool mergeClusters(uint16_t ieta1, uint16_t iphi1, uint16_t itet1, uint16_t icet
       *phi2 = iphi2;
       *cet2 = icet2;
       *tet2 = itet2;
-   }
+   }   
    return true;
-}
+}     
 
-bool getClustersInCard(uint16_t crystals[NCaloLayer1Eta*NCaloLayer1Phi*NCrystalsPerEtaPhi*NCrystalsPerEtaPhi],
-      uint16_t peakEta[NCaloLayer1Eta][NCaloLayer1Phi],
-      uint16_t peakPhi[NCaloLayer1Eta][NCaloLayer1Phi],
-      uint16_t towerET[NCaloLayer1Eta][NCaloLayer1Phi],
-      uint16_t clusterET[NCaloLayer1Eta][NCaloLayer1Phi],
-      uint16_t SortedCluster_ET[12],
-      uint16_t SortedPeak_Eta[12],
-      uint16_t SortedPeak_Phi[12]) {
+
+bool getClustersIn3x4Region(uint16_t crystalsIn3x4Region[3][4][5][5],
+      uint16_t sortedClusterIn3x4_peakEta[NClustersPer3x4Region],
+      uint16_t sortedClusterIn3x4_peakPhi[NClustersPer3x4Region],
+      uint16_t sortedClusterIn3x4_towerEta[NClustersPer3x4Region],
+      uint16_t sortedClusterIn3x4_towerPhi[NClustersPer3x4Region],
+      uint16_t sortedClusterIn3x4_towerET[NClustersPer3x4Region],
+      uint16_t sortedClusterIn3x4_ET[NClustersPer3x4Region]
+      ){
 #pragma HLS PIPELINE II=1
-#pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
-#pragma HLS ARRAY_PARTITION variable=peakEta complete dim=0
-#pragma HLS ARRAY_PARTITION variable=peakPhi complete dim=0
-#pragma HLS ARRAY_PARTITION variable=towerET complete dim=0
-#pragma HLS ARRAY_PARTITION variable=clusterET complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedCluster_ET complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedPeak_Eta complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedPeak_Phi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=crystalsIn3x4Region complete dim=0
+#pragma HLS ARRAY_PARTITION variable=sortedClusterIn3x4_peakEta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=sortedClusterIn3x4_peakPhi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=sortedClusterIn3x4_towerEta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=sortedClusterIn3x4_towerPhi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=sortedClusterIn3x4_towerET complete dim=0
+#pragma HLS ARRAY_PARTITION variable=sortedClusterIn3x4_ET complete dim=0
 
+   //Here array size is 16 instead 12(3x4) for bitonic sorting (order 2^n)
+   uint16_t toSortClusterIn3x4_peakEta[16];
+   uint16_t toSortClusterIn3x4_peakPhi[16];
+   uint16_t toSortClusterIn3x4_towerEta[16];
+   uint16_t toSortClusterIn3x4_towerPhi[16];
+   uint16_t toSortClusterIn3x4_towerET[16];
+   uint16_t toSortClusterIn3x4_ET[16];
+#pragma HLS ARRAY_PARTITION variable=toSortClusterIn3x4_peakEta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=toSortClusterIn3x4_peakPhi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=toSortClusterIn3x4_towerEta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=toSortClusterIn3x4_towerPhi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=toSortClusterIn3x4_towerET complete dim=0
+#pragma HLS ARRAY_PARTITION variable=toSortClusterIn3x4_ET complete dim=0
 
-//--   uint16_t preMergePeakEta[NCaloLayer1Eta][NCaloLayer1Phi];
-//--#pragma HLS ARRAY_PARTITION variable=preMergePeakEta complete dim=0
-//--   uint16_t preMergePeakPhi[NCaloLayer1Eta][NCaloLayer1Phi];
-//--#pragma HLS ARRAY_PARTITION variable=preMergePeakPhi complete dim=0
-//--   uint16_t preMergeTowerET[NCaloLayer1Eta][NCaloLayer1Phi];
-//--#pragma HLS ARRAY_PARTITION variable=preMergeTowerET complete dim=0
-//--   uint16_t preMergeClusterET[NCaloLayer1Eta][NCaloLayer1Phi];
-//--#pragma HLS ARRAY_PARTITION variable=preMergeClusterET complete dim=0
-//
-// Following variables are being used in getting the clusters from 3x4 regions
-   uint16_t preMergePeakEta[3][4];
-#pragma HLS ARRAY_PARTITION variable=preMergePeakEta complete dim=0
-   uint16_t preMergePeakPhi[3][4];
-#pragma HLS ARRAY_PARTITION variable=preMergePeakPhi complete dim=0
-   uint16_t preMergeTowerET[3][4];
-#pragma HLS ARRAY_PARTITION variable=preMergeTowerET complete dim=0
-   uint16_t preMergeClusterET[3][4];
-#pragma HLS ARRAY_PARTITION variable=preMergeClusterET complete dim=0
-   uint16_t crystals_tower[3][4][5][5];
-#pragma HLS ARRAY_PARTITION variable=crystals_tower complete dim=0
-
-   uint16_t sortedclusteret[5];
-#pragma HLS ARRAY_PARTITION variable=sortedclusteret complete dim=0
-   uint16_t sortedpeaketa[5];
-#pragma HLS ARRAY_PARTITION variable=sortedpeaketa complete dim=0
-   uint16_t sortedpeakphi[5];
-#pragma HLS ARRAY_PARTITION variable=sortedpeakphi complete dim=0
-   uint16_t SortedCluster_ET1[30];
-   uint16_t SortedPeak_Eta1[30];
-   uint16_t SortedPeak_Phi1[30];
-#pragma HLS ARRAY_PARTITION variable=SortedCluster_ET1 complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedPeak_Eta1 complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedPeak_Phi1 complete dim=0
-
-   for(int i=0; i<5; i++){
-      sortedclusteret[i]=0;
-      sortedpeaketa[i]=0;
-      sortedpeakphi[i]=0;
+   for(int iToSort=0; iToSort<16; iToSort++){
+#pragma HLS UNROLL
+      toSortClusterIn3x4_peakEta[iToSort] = 0;
+      toSortClusterIn3x4_peakPhi[iToSort] = 0;
+      toSortClusterIn3x4_towerEta[iToSort] = 0;
+      toSortClusterIn3x4_towerPhi[iToSort] = 0;
+      toSortClusterIn3x4_towerET[iToSort] = 0;
+      toSortClusterIn3x4_ET[iToSort] = 0;
    }
 
-   for(int i=0; i<30; i++){
-      SortedCluster_ET1[i]=0;
-      SortedPeak_Eta1[i]=0;
-      SortedPeak_Phi1[i]=0;
-   }
+   uint16_t crystalsInTower[NCrystalsPerEtaPhi][NCrystalsPerEtaPhi];
+#pragma HLS ARRAY_PARTITION variable=crystalsInTower complete dim=0
 
-   for(int i=0; i<12; i++){
-      SortedCluster_ET[i]=0;
-      SortedPeak_Eta[i]=0;
-      SortedPeak_Phi[i]=0;
-   }
+   uint16_t peakEta_[3][4];
+   uint16_t peakPhi_[3][4];
+   uint16_t towerET_[3][4];
+   uint16_t clusterET_[3][4];
+#pragma HLS ARRAY_PARTITION variable=peakEta_   complete dim=0
+#pragma HLS ARRAY_PARTITION variable=peakPhi_   complete dim=0
+#pragma HLS ARRAY_PARTITION variable=towerET_   complete dim=0
+#pragma HLS ARRAY_PARTITION variable=clusterET_ complete dim=0
 
-   for(int tEta=0; tEta<3; tEta++){
-      for(int tPhi=0; tPhi<4; tPhi++){
-	    preMergePeakEta[tEta][tPhi] = 999;
-	    preMergePeakPhi[tEta][tPhi] = 999;
-	    preMergeTowerET[tEta][tPhi] = 0;
-	    preMergeClusterET[tEta][tPhi] = 0;
-      
+   uint16_t mergedPeakEta_[3][4];
+   uint16_t mergedPeakPhi_[3][4];
+   uint16_t mergedTowerET_[3][4];
+   uint16_t mergedClusterET_[3][4];
+#pragma HLS ARRAY_PARTITION variable=mergedPeakEta_   complete dim=0
+#pragma HLS ARRAY_PARTITION variable=mergedPeakPhi_   complete dim=0
+#pragma HLS ARRAY_PARTITION variable=mergedTowerET_   complete dim=0
+#pragma HLS ARRAY_PARTITION variable=mergedClusterET_ complete dim=0
+
+   for(int tEta = 0; tEta < 3; tEta++) {
+#pragma HLS UNROLL
+      for(int tPhi = 0; tPhi < 4; tPhi++) {
+#pragma HLS UNROLL
+	 peakEta_[tEta][tPhi] = 9999;
+	 peakPhi_[tEta][tPhi] = 9999;
+	 towerET_[tEta][tPhi] = 0;
+	 clusterET_[tEta][tPhi] = 0;
+
+	 for(int cEta=0; cEta<NCrystalsPerEtaPhi; cEta++){
+#pragma HLS UNROLL
+	    for(int cPhi=0; cPhi<NCrystalsPerEtaPhi; cPhi++){
+#pragma HLS UNROLL
+	       crystalsInTower[cEta][cPhi] = crystalsIn3x4Region[tEta][tPhi][cEta][cPhi];
+	    }
+	 }
+
+	 getClustersInTower(
+	       crystalsInTower, 
+	       &peakEta_[tEta][tPhi],
+	       &peakPhi_[tEta][tPhi],
+	       &towerET_[tEta][tPhi],
+	       &clusterET_[tEta][tPhi]);
+
+	 mergedPeakEta_[tEta][tPhi]  = peakEta_[tEta][tPhi];
+	 mergedPeakPhi_[tEta][tPhi]  = peakPhi_[tEta][tPhi];
+	 mergedTowerET_[tEta][tPhi]  = towerET_[tEta][tPhi];
+	 mergedClusterET_[tEta][tPhi]= clusterET_[tEta][tPhi];
+
       }
    }
 
-   int a=0;
-   for(int i =0; i<2; i+=3) {  // We are processing 5 of 17 possible etas due to CTP7 size
+   // Merge neighboring split-clusters here
+   for(int tEta = 0; tEta < 3; tEta++) {
+#pragma HLS UNROLL    
+      for(int tPhi = 0; tPhi < 4; tPhi++) {
+#pragma HLS UNROLL   
+
+	 int ntEta = -1;
+	 int ntPhi = -1;
+	 if(peakEta_[tEta][tPhi] == 0 && tEta != 0){
+	    ntEta = tEta - 1;
+	    ntPhi = tPhi;
+	 }
+	 if(peakEta_[tEta][tPhi] == 4 && tEta != 2){
+	    ntEta = tEta + 1;
+	    ntPhi = tPhi;
+	 }
+
+	 if(peakPhi_[tEta][tPhi] == 0 && tPhi != 0) {
+	    ntPhi = tPhi - 1;
+	    ntEta = tEta;
+	 }
+	 if(peakPhi_[tEta][tPhi] == 4 && tPhi != 3){
+	    ntPhi = tPhi + 1;
+	    ntEta = tEta;
+	 }
+	 if(ntEta >= 0 && ntEta < 3 && ntPhi >= 0 && ntPhi < 4){
+	    if(!mergeClusters(
+		     peakEta_[tEta][tPhi],
+		     peakPhi_[tEta][tPhi],
+		     towerET_[tEta][tPhi],
+		     clusterET_[tEta][tPhi],
+		     peakEta_[ntEta][ntPhi],
+		     peakPhi_[ntEta][ntPhi],
+		     towerET_[ntEta][ntPhi],
+		     clusterET_[ntEta][ntPhi],
+		     &mergedPeakEta_[tEta][tPhi],
+		     &mergedPeakPhi_[tEta][tPhi],
+		     &mergedTowerET_[tEta][tPhi],
+		     &mergedClusterET_[tEta][tPhi],
+		     &mergedPeakEta_[ntEta][ntPhi],
+		     &mergedPeakPhi_[ntEta][ntPhi],
+		     &mergedTowerET_[ntEta][ntPhi],
+		     &mergedClusterET_[ntEta][ntPhi])
+	      )
+	       return false;
+	 }
+      }
+   }
+
+
+   int iCluster=0;
+   for(int tEta = 0; tEta < 3; tEta++) {
 #pragma HLS UNROLL
+      for(int tPhi = 0; tPhi < 4; tPhi++) {
+#pragma HLS UNROLL
+	 toSortClusterIn3x4_peakEta[iCluster]  = mergedPeakEta_[tEta][tPhi];
+	 toSortClusterIn3x4_peakPhi[iCluster]  = mergedPeakPhi_[tEta][tPhi];
+	 toSortClusterIn3x4_towerEta[iCluster] = tEta;
+	 toSortClusterIn3x4_towerPhi[iCluster] = tPhi;
+	 toSortClusterIn3x4_towerET[iCluster]  = mergedTowerET_[tEta][tPhi];
+	 toSortClusterIn3x4_ET[iCluster]       = mergedClusterET_[tEta][tPhi];
+	 iCluster++;
+      }
+   }
+   uint16_t xx;
+
+   for(int i=0;i<16;i=i+4){   
+#pragma HLS unroll
+      if(toSortClusterIn3x4_ET[i]<toSortClusterIn3x4_ET[i+1]){
+	 xx=toSortClusterIn3x4_ET[i+1];
+	 toSortClusterIn3x4_ET[i+1]=toSortClusterIn3x4_ET[i];
+	 toSortClusterIn3x4_ET[i]=xx;
+	 xx=toSortClusterIn3x4_peakEta[i];
+	 toSortClusterIn3x4_peakEta[i]=toSortClusterIn3x4_peakEta[i+1];
+	 toSortClusterIn3x4_peakEta[i+1]=xx;
+	 xx=toSortClusterIn3x4_peakPhi[i];
+	 toSortClusterIn3x4_peakPhi[i]=toSortClusterIn3x4_peakPhi[i+1];
+	 toSortClusterIn3x4_peakPhi[i+1]=xx;
+      }
+
+      if(toSortClusterIn3x4_ET[i+2]>toSortClusterIn3x4_ET[i+3]){
+	 xx=toSortClusterIn3x4_ET[i+3];
+	 toSortClusterIn3x4_ET[i+3]=toSortClusterIn3x4_ET[i+2];
+	 toSortClusterIn3x4_ET[i+2]=xx;
+	 xx=toSortClusterIn3x4_peakEta[i+2];
+	 toSortClusterIn3x4_peakEta[i+2]=toSortClusterIn3x4_peakEta[i+3];
+	 toSortClusterIn3x4_peakEta[i+3]=xx;
+	 xx=toSortClusterIn3x4_peakPhi[i+2];
+	 toSortClusterIn3x4_peakPhi[i+2]=toSortClusterIn3x4_peakPhi[i+3];
+	 toSortClusterIn3x4_peakPhi[i+3]=xx;
+      }
+   }
+
+   // passing control to second level of quaternary comparators                                                                                                                     
+   bitonic_1_4(toSortClusterIn3x4_ET,toSortClusterIn3x4_peakEta,toSortClusterIn3x4_peakPhi);
+
+   for(int iSort=0; iSort<NClustersPer3x4Region; iSort++){
+      sortedClusterIn3x4_ET[iSort]      =toSortClusterIn3x4_ET[iSort]; 
+      sortedClusterIn3x4_peakEta[iSort] =toSortClusterIn3x4_peakEta[iSort];
+      sortedClusterIn3x4_peakPhi[iSort] =toSortClusterIn3x4_peakPhi[iSort];
+      sortedClusterIn3x4_towerEta[iSort]=toSortClusterIn3x4_towerEta[iSort]; // TO BE SORTED - NOT YET IN SORTER!!
+      sortedClusterIn3x4_towerPhi[iSort]=toSortClusterIn3x4_towerPhi[iSort]; // TO BE SORTED
+   }
+
+
+   return true; 
+}
+
+bool getClustersInCard(
+      uint16_t crystals[NCaloLayer1Eta*NCaloLayer1Phi*NCrystalsPerEtaPhi*NCrystalsPerEtaPhi],
+      uint16_t SortedCluster_peakEta[NClustersPerCard],
+      uint16_t SortedCluster_peakPhi[NClustersPerCard],
+      uint16_t SortedCluster_towerEta[NClustersPerCard],
+      uint16_t SortedCluster_towerPhi[NClustersPerCard],
+      uint16_t SortedCluster_towerET[NClustersPerCard],
+      uint16_t SortedCluster_ET[NClustersPerCard]
+      ){
+#pragma HLS PIPELINE II=1
+#pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
+#pragma HLS ARRAY_PARTITION variable=SortedCluster_peakEta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=SortedCluster_peakPhi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=SortedCluster_towerEta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=SortedCluster_towerPhi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=SortedCluster_towerET complete dim=0
+#pragma HLS ARRAY_PARTITION variable=SortedCluster_ET complete dim=0
+
+   uint16_t crystalsET[3][4][5][5];
+#pragma HLS ARRAY_PARTITION variable=crystalsET complete dim=0
+
+   uint16_t peak_Eta[NClustersPer3x4Region];
+   uint16_t peak_Phi[NClustersPer3x4Region];
+   uint16_t tower_Eta[NClustersPer3x4Region];
+   uint16_t tower_Phi[NClustersPer3x4Region];
+   uint16_t tower_ET[NClustersPer3x4Region];
+   uint16_t clusters_ET[NClustersPer3x4Region];
+#pragma HLS ARRAY_PARTITION variable=peak_Eta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=peak_Phi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=tower_Eta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=tower_Phi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=tower_ET complete dim=0
+#pragma HLS ARRAY_PARTITION variable=clusters_ET complete dim=0
+
+   // These arrays should be of size 30 for VU9P
+   // For CTP7: they are 10: 5 cluster per region
+   uint16_t preMergeClusterPeakEta[10];
+   uint16_t preMergeClusterPeakPhi[10];
+   uint16_t preMergeClusterTowerEta[10];
+   uint16_t preMergeClusterTowerPhi[10];
+   uint16_t preMergeClusterTowerET[10];
+   uint16_t preMergeClusterET[10];
+#pragma HLS ARRAY_PARTITION variable=preMergeClusterPeakEta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=preMergeClusterPeakPhi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=preMergeClusterTowerEta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=preMergeClusterTowerPhi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=preMergeClusterTowerET complete dim=0
+#pragma HLS ARRAY_PARTITION variable=preMergeClusterET complete dim=0
+
+   // this for-loop covers all 3x4 regions in one RCT card
+   //In CTP7: Only 5x4 fit in the card= 1-3x4 + 1-2x4
+   //In VU9P: 17x4: 5-3x4 + 1-2x4 (iRegion loop will change to <15)
+   uint16_t region = 0;
+   for(int iRegion=0; iRegion<2; iRegion+=3) {  // We are processing 5 of 17 possible etas due to CTP7 size
+#pragma HLS UNROLL
+      for(int iClusters=0; iClusters<NClustersPer3x4Region; iClusters++){
+	 peak_Eta[iClusters]   =999;
+	 peak_Phi[iClusters]   =999;
+	 tower_Eta[iClusters]  =999;
+	 tower_Phi[iClusters]  =999;
+	 tower_ET[iClusters]   =0;
+	 clusters_ET[iClusters]=0;
+      }
+
       for(int tEta = 0; tEta < 3; tEta++) {
-	 //	 if(i == 1 && tEta == 2) continue; // i=0 uses 3, i=1 2
 #pragma HLS UNROLL
 	 for(int tPhi = 0; tPhi < NCaloLayer1Phi; tPhi++) {
 #pragma HLS UNROLL
-	    //WHY: Following four variables are not correctly initialized
-	    //-- preMergePeakEta[tEta][tPhi] = 999;
-	    //-- preMergePeakPhi[tEta][tPhi] = 999;
-	    //-- preMergeTowerET[tEta][tPhi] = 0;
-	    //-- preMergeClusterET[tEta][tPhi] = 0;
-	    for( int ceta =0; ceta<5; ceta++) {
+	    for( int ceta =0; ceta<NCrystalsPerEtaPhi; ceta++) {
 #pragma HLS UNROLL
-	       for( int cphi =0; cphi<5; cphi++) {
+	       for(int cphi =0; cphi<NCrystalsPerEtaPhi; cphi++) {
 #pragma HLS UNROLL
-		  int crystalID = (i+tEta)*NCaloLayer1Phi*25+tPhi*25+ceta*5+cphi;
+
+		  int crystalID = (iRegion+tEta)*NCaloLayer1Phi*25+tPhi*25+ceta*5+cphi;
 		  if(crystalID > 5*NCaloLayer1Phi*25) {
 		     fprintf(stderr, "crystalID too large");
 		     exit(1);
 		  }
-		  crystals_tower[tEta][tPhi][ceta][cphi] = crystals[crystalID];
+		  crystalsET[tEta][tPhi][ceta][cphi] = crystals[crystalID];
 	       }
-
 	    }
 	 }
       }
-      getClustersin3x4Region(crystals_tower, preMergePeakEta,
-	    preMergePeakPhi,
-	    preMergeTowerET,
-	    preMergeClusterET,
-	    sortedclusteret,
-	    sortedpeaketa,
-	    sortedpeakphi);
+      getClustersIn3x4Region(crystalsET, peak_Eta, peak_Phi, tower_Eta, tower_Phi, tower_ET, clusters_ET);
 
-
-      for(int iclusters = 0; iclusters<5; iclusters++){
-	 SortedCluster_ET1[a+iclusters] = sortedclusteret[iclusters];
-	 SortedPeak_Eta1[a+iclusters]   = sortedpeaketa[iclusters];
-	 SortedPeak_Phi1[a+iclusters]   = sortedpeakphi[iclusters];
-      }
-
-      //SortedCluster_ET1[a+0] = sortedclusteret[0];
-      //SortedCluster_ET1[a+1] = sortedclusteret[1];
-      //SortedCluster_ET1[a+2] = sortedclusteret[2];
-      //SortedCluster_ET1[a+3] = sortedclusteret[3];
-      //SortedCluster_ET1[a+4] = sortedclusteret[4];
-
-      //SortedPeak_Eta1[a+0] = sortedpeaketa[0];
-      //SortedPeak_Eta1[a+1] = sortedpeaketa[1];
-      //SortedPeak_Eta1[a+2] = sortedpeaketa[2];
-      //SortedPeak_Eta1[a+3] = sortedpeaketa[3];
-      //SortedPeak_Eta1[a+4] = sortedpeaketa[4];
-
-
-      //SortedPeak_Phi1[a+0] = sortedpeakphi[0];
-      //SortedPeak_Phi1[a+1] = sortedpeakphi[1];
-      //SortedPeak_Phi1[a+2] = sortedpeakphi[2];
-      //SortedPeak_Phi1[a+3] = sortedpeakphi[3];
-      //SortedPeak_Phi1[a+4] = sortedpeakphi[4];
-
-      //    for(int i=0;i<5; i++)
-      //{std::cout<<"a: "<<a<<"i: "<<i<<"SortedPeak_Eta[a+0]: "<<SortedPeak_Eta[a+i]<<"SortedPeak_Phi[a+0]: "<<SortedPeak_Phi[a+i]<<"peak eta: "<<preMergePeakEta[SortedPeak_Eta[a+i]][SortedPeak_Phi[a+i]]<<"Sorted_et: "<<SortedCluster_ET[a+i]<<"Using clsuter et: "<<preMergeClusterET[SortedPeak_Eta[a+i]][SortedPeak_Phi[a+i]]<<std::endl;}
-
-
-      a= a+5;
-   }
-
-
-   uint16_t peakEta3[32];
-   uint16_t peakPhi3[32];
-   uint16_t clusterET3[32];
-
-#pragma HLS ARRAY_PARTITION variable=peakEta3 complete dim=0
-#pragma HLS ARRAY_PARTITION variable=peakPhi3 complete dim=0
-#pragma HLS ARRAY_PARTITION variable=clusterET3 complete dim=0
-
-   for(int i=0;i<32;i++)
-   {
+      for(int k=0; k<5; k++){ 
 #pragma HLS UNROLL
-      peakEta3[i]=0;
-      peakPhi3[i]=0;
-      clusterET3[i]=0;
-
-   }
-
-
-   for(int i=0;i<30;i++)
-   {
-      clusterET3[i]= SortedCluster_ET1[i];
-      peakEta3[i]= SortedPeak_Eta1[i];
-      peakPhi3[i]= SortedPeak_Phi1[i];
-   }
-
-
-   int xx=0;
-   //first level of binary comparators                                                                                                                                                  
-   for(int i=0;i<32;i=i+4)
-   {
-#pragma HLS unroll
-      if(clusterET3[i]>clusterET3[i+1])
-      {xx=clusterET3[i+1];
-	 clusterET3[i+1]=clusterET3[i];
-	 clusterET3[i]=xx;
-	 xx=peakEta3[i];
-	 peakEta3[i]=peakEta3[i+1];
-	 peakEta3[i+1]=xx;
-	 xx=peakPhi3[i];
-	 peakPhi3[i]=peakPhi3[i+1];
-	 peakPhi3[i+1]=xx;
-      }
-
-
-      if(clusterET3[i+2]<clusterET3[i+3])
-      {xx=clusterET3[i+3];
-	 clusterET3[i+3]=clusterET3[i+2];
-	 clusterET3[i+2]=xx;
-	 xx=peakEta3[i+2];
-	 peakEta3[i+2]=peakEta3[i+3];
-	 peakEta3[i+3]=xx;
-	 xx=peakPhi3[i+2];
-	 peakPhi3[i+2]=peakPhi3[i+3];
-	 peakPhi3[i+3]=xx;
+	 preMergeClusterPeakEta[region+k]  =peak_Eta[k];
+	 preMergeClusterPeakPhi[region+k]  =peak_Phi[k];
+	 preMergeClusterTowerEta[region+k] =0;  // tower_Eta[k];
+	 preMergeClusterTowerPhi[region+k] =0; //tower_Phi[k];
+	 preMergeClusterTowerET[region+k]  =tower_ET[k];
+	 preMergeClusterET[region+k]       =clusters_ET[k];
 
       }
+      region = region + NClustersPer3x4Region; 
+   }
+   //Clusters in 2x4 region ---:
+   //i2x4region variable is needed to get the correct tEta value for 2x4 region.
+   uint16_t i2x4region;
+   i2x4region = region/NClustersPer3x4Region*3;
+
+   // Reset and initialize variables for 2x4 region
+   for(int iClusters=0; iClusters<NClustersPer3x4Region; iClusters++){
+#pragma HLS UNROLL
+      peak_Eta[iClusters]   =999;
+      peak_Phi[iClusters]   =999;
+      tower_Eta[iClusters]  =999;
+      tower_Phi[iClusters]  =999;
+      tower_ET[iClusters]   =0;
+      clusters_ET[iClusters]=0;
    }
 
-
-   bitonic4(clusterET3,peakEta3,peakPhi3);
-
-   for(int i=0;i<12;i++){
-      SortedCluster_ET[i] = clusterET3[i];
-      SortedPeak_Eta[i]= peakEta3[i];
-      SortedPeak_Phi[i]= peakPhi3[i];
-
-      //if(SortedCluster_ET[i] > 0) 
-      std::cout<<"Clusters: "<<i<<" SortedPeak_Eta["<<i<<"]="<<SortedPeak_Eta[i]<<" SortedPeak_Phi["<<i<<"]="<<SortedPeak_Phi[i]<<"  SortedCluster_ET["<<i<<"]="<< SortedCluster_ET[i]<<std::endl;
-   }
-
-
-   // Merge neighboring split-clusters here
-   for(int tEta = 0; tEta < NCaloLayer1Eta; tEta++) {
+   for(int tEta = 0; tEta < 3; tEta++) { // For 2x4 region
 #pragma HLS UNROLL
       for(int tPhi = 0; tPhi < NCaloLayer1Phi; tPhi++) {
 #pragma HLS UNROLL
-	 peakEta[tEta][tPhi] = 0;
-	 peakPhi[tEta][tPhi] = 0;
-	 towerET[tEta][tPhi] = 0;
-	 clusterET[tEta][tPhi] = 0;
-	 
-	 // NOT being used as of NOW
-	 //-- peakEta[tEta][tPhi] = preMergePeakEta[tEta][tPhi];
-	 //-- peakPhi[tEta][tPhi] = preMergePeakPhi[tEta][tPhi];
-	 //-- towerET[tEta][tPhi] = preMergeTowerET[tEta][tPhi];
-	 //-- clusterET[tEta][tPhi] = preMergeClusterET[tEta][tPhi];
-	 //-- int nEta = -1;
-	 //-- int nPhi = -1;
-	 //-- if(preMergePeakEta[tEta][tPhi] == 0 && tEta != 0) nEta = tEta - 1;
-	 //-- if(preMergePeakEta[tEta][tPhi] == NCaloLayer1Phi && tEta != 16) nEta = tEta + 1;
-	 //-- if(preMergePeakPhi[tEta][tPhi] == 0 && tPhi != 0) nPhi = tPhi - 1;
-	 //-- if(preMergePeakPhi[tEta][tPhi] == NCaloLayer1Phi && tPhi != 3) nPhi = tPhi + 1;
-	 //-- //std::cout<<"Before merging tEta/tPhi/peakEta/peakPhi/"<<tEta<<"/"<<tPhi<<"/"<<peakEta[tEta][tPhi]<<"/"<<peakPhi[tEta][tPhi]<<endl;
-	 //-- if(nEta >= 0 && nEta < NCaloLayer1Eta && nPhi >= 0 && nPhi < NCaloLayer1Phi) {
-	 //--    if(!mergeClusters(preMergePeakEta[tEta][tPhi],
-	 //--             preMergePeakPhi[tEta][tPhi],
-	 //--             preMergeTowerET[tEta][tPhi],
-	 //--             preMergeClusterET[tEta][tPhi],
-	 //--             preMergePeakEta[nEta][nPhi],
-	 //--             preMergePeakPhi[nEta][nPhi],
-	 //--             preMergeTowerET[nEta][nPhi],
-	 //--             preMergeClusterET[nEta][nPhi],
-	 //--             &peakEta[tEta][tPhi],
-	 //--             &peakPhi[tEta][tPhi],
-	 //--             &towerET[tEta][tPhi],
-	 //--             &clusterET[tEta][tPhi],
-	 //--             &peakEta[nEta][nPhi],
-	 //--             &peakPhi[nEta][nPhi],
-	 //--             &towerET[nEta][nPhi],
-	 //--             &clusterET[nEta][nPhi]))
-	 //--       return false;
+	 for( int ceta =0; ceta<NCrystalsPerEtaPhi; ceta++) {
+#pragma HLS UNROLL
+	    for(int cphi =0; cphi<NCrystalsPerEtaPhi; cphi++) {
+#pragma HLS UNROLL
+	       crystalsET[tEta][tPhi][ceta][cphi] = 0;
+	       if(tEta<2){ //As this section is for 2x4 region
 
-	 //-- }
+		  int crystalID = (i2x4region+tEta)*NCaloLayer1Phi*25+tPhi*25+ceta*5+cphi;
+		  if(crystalID > 5*NCaloLayer1Phi*25) {
+		     fprintf(stderr, "crystalID too large");
+		     exit(1);
+		  }
+		  crystalsET[tEta][tPhi][ceta][cphi] = crystals[crystalID];
+	       }
+	    }
+	 }
       }
    }
 
+   getClustersIn3x4Region(crystalsET, peak_Eta, peak_Phi, tower_Eta, tower_Phi, tower_ET, clusters_ET);
+
+   for(int k=0; k<5; k++){ 
+#pragma HLS UNROLL
+      preMergeClusterPeakEta[region+k]  =peak_Eta[k];
+      preMergeClusterPeakPhi[region+k]  =peak_Phi[k];
+      preMergeClusterTowerEta[region+k] =0;  // tower_Eta[k];
+      preMergeClusterTowerPhi[region+k] =0; //tower_Phi[k];
+      preMergeClusterTowerET[region+k]  =tower_ET[k];
+      preMergeClusterET[region+k]       =clusters_ET[k];
+
+   }
+   //------------
+
+
+
+   // For CTP7: Sending only 10 clusters per card
+   // Sorting final 10 clusters (this will be 30 for the VU9P case)
+   //Here array size is 16 instead 12(3x4) for bitonic sorting (order 2^n)
+   uint16_t toSort_peakEta[16];
+   uint16_t toSort_peakPhi[16];
+   uint16_t toSort_towerEta[16];
+   uint16_t toSort_towerPhi[16];
+   uint16_t toSort_towerET[16];
+   uint16_t toSort_ET[16];
+#pragma HLS ARRAY_PARTITION variable=toSort_peakEta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=toSort_peakPhi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=toSort_towerEta complete dim=0
+#pragma HLS ARRAY_PARTITION variable=toSort_towerPhi complete dim=0
+#pragma HLS ARRAY_PARTITION variable=toSort_towerET complete dim=0
+#pragma HLS ARRAY_PARTITION variable=toSort_ET complete dim=0
+
+   for(int iToSort=0; iToSort<16; iToSort++){
+#pragma HLS UNROLL
+      toSort_peakEta[iToSort] = 0;
+      toSort_peakPhi[iToSort] = 0;
+      toSort_towerEta[iToSort] = 0;
+      toSort_towerPhi[iToSort] = 0;
+      toSort_towerET[iToSort] = 0;
+      toSort_ET[iToSort] = 0;
+      if(iToSort < 10){
+	 toSort_peakEta[iToSort] = preMergeClusterPeakEta[iToSort];
+	 toSort_peakPhi[iToSort] = preMergeClusterPeakPhi[iToSort];
+	 toSort_towerEta[iToSort] = preMergeClusterTowerEta[iToSort];
+	 toSort_towerPhi[iToSort] = preMergeClusterTowerPhi[iToSort];
+	 toSort_towerET[iToSort] = preMergeClusterTowerET[iToSort];
+	 toSort_ET[iToSort] = preMergeClusterET[iToSort];
+      }
+   }
+
+   uint16_t xx;
+   for(int ii=0; ii<16; ii=ii+4){
+#pragma HLS unroll 
+      if(toSort_ET[ii] < toSort_ET[ii+1]){
+	 xx=toSort_ET[ii+1];
+	 toSort_ET[ii+1]=toSort_ET[ii];
+	 toSort_ET[ii]=xx;
+	 xx=toSort_peakEta[ii];
+	 toSort_peakEta[ii]=toSort_peakEta[ii+1];
+	 toSort_peakEta[ii+1]=xx;
+	 xx=toSort_peakPhi[ii];
+	 toSort_peakPhi[ii]=toSort_peakPhi[ii+1];
+	 toSort_peakPhi[ii+1]=xx;
+      }
+
+      if(toSort_ET[ii+2]>toSort_ET[ii+3])
+      {xx=toSort_ET[ii+3];
+	 toSort_ET[ii+3]=toSort_ET[ii+2];
+	 toSort_ET[ii+2]=xx;
+	 xx=toSort_peakEta[ii+2];
+	 toSort_peakEta[ii+2]=toSort_peakEta[ii+3];
+	 toSort_peakEta[ii+3]=xx;
+	 xx=toSort_peakPhi[ii+2];
+	 toSort_peakPhi[ii+2]=toSort_peakPhi[ii+3];
+	 toSort_peakPhi[ii+3]=xx;
+      }    
+   }        
+   // passing control to second level of quaternary comparators
+   bitonic_1_4(toSort_ET,toSort_peakEta,toSort_peakPhi);
+   //Sorting ends, assigning sorted clusters to final set of variables.
+
+
+   for(int kk=0; kk<10; kk++){ // kk<NClustersPerCard : For now sending 10 only
+#pragma HLS UNROLL
+      SortedCluster_peakEta[kk]  = toSort_peakEta[kk];
+      SortedCluster_peakPhi[kk]  = toSort_peakPhi[kk];
+      SortedCluster_towerEta[kk] = 0; //preMergeClusterTowerEta[kk];
+      SortedCluster_towerPhi[kk] = 0; //preMergeClusterTowerPhi[kk];
+      SortedCluster_towerET[kk]  = 0; //preMergeClusterTowerET[kk];
+      SortedCluster_ET[kk]       = toSort_ET[kk];
+   }
 
    return true;
 }

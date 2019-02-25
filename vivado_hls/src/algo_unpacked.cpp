@@ -1,4 +1,14 @@
+#include <stdio.h>                                                                                                                                                                   
 #include <stdlib.h>
+#include <stdint.h>
+#include <unistd.h>
+
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <string>
+
+using namespace std;
 
 //#include "algo_unpacked.h"   // This is where you should have had hls_algo - if not find the header file and fix this - please do not copy this file as that defines the interface
 #include "../../../../../APx_Gen0_Algo/VivadoHls/null_algo_unpacked/vivado_hls/src/algo_unpacked.h"
@@ -34,6 +44,13 @@ void algo_unpacked(ap_uint<192> link_in[N_CH_IN], ap_uint<192> link_out[N_CH_OUT
 #pragma HLS ARRAY_PARTITION variable=link_out complete dim=0
 #pragma HLS PIPELINE II=3
 #pragma HLS INTERFACE ap_ctrl_hs port=return
+
+
+
+   // null algo specific pragma: avoid fully combinatorial algo by specifying min latency
+   // otherwise algorithm clock input (ap_clk) gets optimized away
+#pragma HLS latency min=3
+
    //#pragma HLS INTERFACE ap_none port=link_out
 
    //#pragma HLS ARRAY_PARTITION variable=link_in_2d complete dim=0
@@ -57,6 +74,7 @@ for (int idx = 0; idx < N_CH_OUT; idx++)
 
 #ifndef ALGO_PASSTHROUGH
 
+
 static bool first = true;
 // Pick the input from link_in
 uint16_t crystals[NCaloLayer1Eta*NCaloLayer1Phi*NCrystalsPerEtaPhi*NCrystalsPerEtaPhi];
@@ -71,104 +89,108 @@ crystalLoop: for(int crystalID = 0; crystalID < NCaloLayer1Eta * NCaloLayer1Phi 
 		int bitLo = ((crystalID - link_idx * NCrystalsPerLink) % NCrystalsPerLink + 1) * 16;
 		int bitHi = bitLo + 15;
 		crystals[crystalID] = link_in[link_idx].range(bitHi, bitLo);
-		if(first) printf("crystals[%d] = link_in[%d].range(%d, %d) = %d;\n", crystalID, link_idx, bitHi, bitLo, crystals[crystalID]);
+		//printf("crystals[%d] = link_in[%d].range(%d, %d) = %d;\n", crystalID, link_idx, bitHi, bitLo, crystals[crystalID]);
+		if(first && crystals[crystalID] > 0) printf("crystals[%d] = link_in[%d].range(%d, %d) = %d;\n", crystalID, link_idx, bitHi, bitLo, crystals[crystalID]);
 	     }
-uint16_t peakEta[5][4];        // Ignore entirely, as this is not sent to GCT
-uint16_t peakPhi[5][4];        // Ignore entirely, as this is not sent to GCT
-uint16_t largeClusterET[5][4]; // Ignore entirely, as this is not sent to GCT
-uint16_t smallClusterET[5][4]; // Ignore entirely, as this is not sent to GCT
-uint16_t sortedCluster_ET[12];  // Output 0-2,3-5,6-8,9-11 in four different links - ignore remaining
-uint16_t sortedPeak_Eta[12];
-uint16_t sortedPeak_Phi[12];
 
-for(int ieta=0; ieta<5; ieta++){
-   for(int iphi=0; iphi<4; iphi++){
-      peakEta[ieta][iphi] =0;
-      peakPhi[ieta][iphi]=0;
-   }
-}
+ uint16_t sortedCluster_peakEta[12];
+ uint16_t sortedCluster_peakPhi[12];
+ uint16_t sortedCluster_towerEta[12];
+ uint16_t sortedCluster_towerPhi[12];
+ uint16_t sortedCluster_towerET[12];
+ uint16_t sortedCluster_ET[12];  // Output 0-2,3-5,6-8,9-11 in four different links - ignore remaining
+ 
+ #pragma HLS ARRAY_PARTITION variable=sortedCluster_peakEta complete dim=0
+ #pragma HLS ARRAY_PARTITION variable=sortedCluster_peakPhi complete dim=0
+ #pragma HLS ARRAY_PARTITION variable=sortedCluster_towerEta complete dim=0
+ #pragma HLS ARRAY_PARTITION variable=sortedCluster_towerPhi complete dim=0
+ #pragma HLS ARRAY_PARTITION variable=sortedCluster_towerET complete dim=0
+ #pragma HLS ARRAY_PARTITION variable=sortedCluster_ET complete dim=0
+ 
+ for(int icluster=0; icluster<12; icluster++){
+ #pragma HLS UNROLL
+    sortedCluster_peakEta[icluster]=0;
+    sortedCluster_peakPhi[icluster]=0;
+    sortedCluster_towerEta[icluster]=0;
+    sortedCluster_towerPhi[icluster]=0;
+    sortedCluster_towerET[icluster]=0;
+    sortedCluster_ET[icluster]=0;
+ }
+ printf(" ............calling function ..........\n");
+ bool success = getClustersInCard(crystals, 
+       sortedCluster_peakEta, 
+       sortedCluster_peakPhi, 
+       sortedCluster_towerEta,
+       sortedCluster_towerPhi,
+       sortedCluster_towerET,
+       sortedCluster_ET);
+ 
+ //----
+ int olink;
+ for(int item=0; item < 12; item++) {
+ #pragma HLS UNROLL
+    olink = item / 3;
+    int word = item % 3;
+    int bLo1 = word * 32 + 32;
+    int bHi1 = bLo1 + 2;
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+       link_out[o].range(bHi1,bLo1) = ap_uint<3>(sortedCluster_peakEta[item]);
+       //link_out[o].range(bHi1,bLo1) = 0;
+    }
+    if(first) printf("link_out[%d].range(%d, %d) = ap_uint<3>(sortedCluster_peakEta[%d]) = %d;\n", olink, bHi1, bLo1, item, sortedCluster_peakEta[item]);
+    int bLo2 = bHi1 + 1;
+    int bHi2 = bLo2 + 2;
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+       link_out[o].range(bHi2,bLo2) = ap_uint<3>(sortedCluster_peakPhi[item]);
+       //link_out[o].range(bHi2,bLo2) = 0;
+    }
+    if(first) printf("link_out[%d].range(%d, %d) = ap_uint<3>(sortedCluster_peakPhi[%d]) = %d;\n", olink, bHi2, bLo2, item, sortedCluster_peakPhi[item]);
+    int bLo3 = bHi2 + 1;
+    int bHi3 = bLo3 + 5;
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+       link_out[o].range(bHi3,bLo3) = ap_uint<6>(sortedCluster_towerEta[item]);
+       //link_out[o].range(bHi3,bLo3) = 0;
+    }
+//    if(first) printf("link_out[%d].range(%d, %d) = ap_uint<6>(sortedCluster_towerEta[%d]) = %d;\n", olink, bHi3, bLo3, item, sortedCluster_towerEta[item]);
+    int bLo4 = bHi3 + 1;
+    int bHi4 = bLo4 + 3;
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+       link_out[o].range(bHi4,bLo4) = ap_uint<4>(sortedCluster_towerPhi[item]);
+       //link_out[o].range(bHi4,bLo4) = 0;
+    }
+ //   if(first) printf("link_out[%d].range(%d, %d) = ap_uint<4>(sortedCluster_towerPhi[%d])=%d;\n", olink, bHi4, bLo4,item, sortedCluster_towerPhi[item]);
+    int bLo5 = bHi4 + 1;
+    int bHi5 = bLo5 + 15;
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+       link_out[o].range(bHi5,bLo5) = ap_uint<16>(sortedCluster_ET[item]);
+       //printf("---->> link_out[%d].range(%d, %d) = ap_uint<16>(sortedCluster_ET[%d]) = %d;\n", o, bHi5, bLo5, item, sortedCluster_ET[item]);
+    }
+    if(first) printf("link_out[%d].range(%d, %d) = ap_uint<16>(sortedCluster_ET[%d]) = %d;\n", olink, bHi5, bLo5, item, sortedCluster_ET[item]);
+    int bLo6 = bHi5 + 1;
+    for(int o=olink; o < N_CH_OUT; o+=4) {
+       link_out[o].range(191,bLo6) = 0;
+    }
+ 
+ }
+/*
+   for (int olink = 0; olink < N_CH_OUT; olink++) 
+   std::cout<< "0x" << setfill('0') << setw(16) << hex << link_out[olink].range(63,0).to_int64() << "    ";
+   std::cout<<std::endl;
+   for (int olink = 0; olink < N_CH_OUT; olink++) 
+   std::cout<< "0x" << setfill('0') << setw(16) << hex << link_out[olink].range(127,64).to_int64() << "    ";
+   std::cout<<std::endl;
+   for (int olink = 0; olink < N_CH_OUT; olink++) 
+   std::cout<< "0x" << setfill('0') << setw(16) << hex << link_out[olink].range(191,128).to_int64() << "    ";
+   std::cout<<std::endl;
 
-for(int icluster=0; icluster<12; icluster++){
-   sortedCluster_ET[icluster]=0;
-   sortedPeak_Eta[icluster]=0;
-   sortedPeak_Phi[icluster]=0;
-}
-
-#pragma HLS ARRAY_PARTITION variable=peakEta complete dim=0
-#pragma HLS ARRAY_PARTITION variable=peakPhi complete dim=0
-#pragma HLS ARRAY_PARTITION variable=largeClusterET complete dim=0
-#pragma HLS ARRAY_PARTITION variable=smallClusterET complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedCluster_ET complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedPeak_Eta complete dim=0
-#pragma HLS ARRAY_PARTITION variable=SortedPeak_Phi complete dim=0
-bool success = getClustersInCard(crystals, peakEta, peakPhi, largeClusterET, smallClusterET,sortedCluster_ET,sortedPeak_Eta,sortedPeak_Phi);
-
-//REMOVE IT: done for testing
-for(int icluster=0; icluster<12; icluster++){
-   sortedPeak_Eta[icluster]=0;
-   sortedPeak_Phi[icluster]=0;
-}
-//----
-
-int olink;
-for(int item=0; item < 12; item++) {
-#pragma HLS UNROLL
-   olink = item / 3;
-   int word = item % 3;
-   int bLo1 = word * 32 + 32;
-   int bHi1 = bLo1 + 2;
-   for(int o=olink; o < N_CH_OUT; o+=4) {
-      //link_out[o].range(bHi1,bLo1) = ap_uint<3>(peakEta[item]);
-      link_out[o].range(bHi1,bLo1) = 0;
-   }
-   if(first) printf("link_out[%d].range(%d, %d) = ap_uint<3>(peakEta[%d]) = %d;\n", olink, bHi1, bLo1, item, 0);
-   int bLo2 = bHi1 + 1;
-   int bHi2 = bLo2 + 2;
-   for(int o=olink; o < N_CH_OUT; o+=4) {
-      //link_out[o].range(bHi2,bLo2) = ap_uint<3>(peakPhi[item]);
-      link_out[o].range(bHi2,bLo2) = 0;
-   }
-   if(first) printf("link_out[%d].range(%d, %d) = ap_uint<3>(peakPhi[%d]) = %d;\n", olink, bHi2, bLo2, item, 0);
-   int bLo3 = bHi2 + 1;
-   int bHi3 = bLo3 + 5;
-   for(int o=olink; o < N_CH_OUT; o+=4) {
-      link_out[o].range(bHi3,bLo3) = ap_uint<6>(sortedPeak_Eta[item]);
-   }
-   if(first) printf("link_out[%d].range(%d, %d) = ap_uint<6>(sortedPeak_Eta[%d]) = %d;\n", olink, bHi3, bLo3, item, sortedPeak_Eta[item]);
-   int bLo4 = bHi3 + 1;
-   int bHi4 = bLo4 + 3;
-   for(int o=olink; o < N_CH_OUT; o+=4) {
-      link_out[o].range(bHi4,bLo4) = ap_uint<4>(sortedPeak_Phi[item]);
-   }
-   if(first) printf("link_out[%d].range(%d, %d) = ap_uint<4>(sortedPeak_Phi[%d])=%d;\n", olink, bHi4, bLo4,item, sortedPeak_Phi[item]);
-   int bLo5 = bHi4 + 1;
-   int bHi5 = bLo5 + 15;
-   for(int o=olink; o < N_CH_OUT; o+=4) {
-      link_out[o].range(bHi5,bLo5) = ap_uint<16>(sortedCluster_ET[item]);
-   }
-   if(first) printf("link_out[%d].range(%d, %d) = ap_uint<16>(sortedCluster_ET[%d]) = %d;\n", olink, bHi5, bLo5, item, sortedCluster_ET[item]);
-   int bLo6 = bHi5 + 1;
-   for(int o=olink; o < N_CH_OUT; o+=4) {
-      link_out[o].range(191,bLo6) = 0;
-   }
-}
+   std::cout<< endl<<setfill('.') << setw(150) << " " <<std::endl;
+   */
+//std::cout<<"----------------------------------------------------------------------"<<std::endl;
 if(first) first = false;
 #else
 idxLoop: for (int idx = 0; idx < N_CH_OUT; idx++) {
 	    link_out[idx] = link_in[idx];
 	 }
 #endif
-/*
-  for (int idx = 0; idx < N_CH_OUT; idx++) {
-#pragma HLS UNROLL
 
-//  pass-through "algo"
-link_out[lnk].range(7,0) = 0;
-link_out[lnk].range(191,8) = link_in[lnk].range(191,8) ;
-}
-
-link_out_2d[idx][0] = link_out[idx].range(63, 0);
-link_out_2d[idx][1] = link_out[idx].range(127, 64);
-link_out_2d[idx][2] = link_out[idx].range(191, 128);
-}*/
 }
