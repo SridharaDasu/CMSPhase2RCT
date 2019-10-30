@@ -94,17 +94,15 @@ struct Tower {
       out[5] |= (uint64_t)(this->crystals[4][i+3].energy) << (i * 14 + 6);
     }
 
-  //--  for(size_t kk=0; kk< 6;  kk++)
-  //--     cout<<std::setw(20)<<out[kk]<<"   "<<std::bitset<64>(out[kk])<<std::endl;
-
-
+    for(size_t kk=0; kk< 6;  kk++)
+       cout<<std::setw(20)<<out[kk]<<"   "<<std::bitset<64>(out[kk])<<std::endl;
   }
 
 	Crystal crystals[5][5];
 };
 
-#define ETA 6
-#define PHI 4
+#define ETA 17
+#define PHI 2
 
 int main(int argn, char *argp[]) {
 
@@ -123,23 +121,26 @@ int main(int argn, char *argp[]) {
   towers[0][0].crystals[2][3].energy = 11;
   towers[0][0].crystals[2][4].energy = 22;
   towers[0][1].crystals[2][0].energy = 50;
-  towers[0][2].crystals[0][3].energy = 44;
-  towers[0][3].crystals[3][1].energy = 55;
-  towers[1][0].crystals[4][4].energy = 66;
-  towers[1][1].crystals[3][3].energy = 77;
-  towers[1][1].crystals[3][4].energy = 88;
-  towers[1][2].crystals[2][1].energy = 99;
-  towers[2][1].crystals[3][1].energy = 95;
-  towers[2][2].crystals[3][3].energy = 8;
-  towers[3][0].crystals[1][1].energy = 170;
-  towers[3][1].crystals[4][2].energy = 123;
-  towers[3][2].crystals[1][2].energy = 25;
-  towers[3][3].crystals[4][3].energy = 70;
-  towers[4][0].crystals[3][1].energy = 35;
-  towers[4][1].crystals[2][3].energy = 26;
-  towers[4][2].crystals[3][1].energy = 43;
-  towers[4][2].crystals[2][2].energy = 204;
-  towers[4][3].crystals[0][3].energy = 30;
+  towers[1][0].crystals[0][3].energy = 44;
+  towers[1][1].crystals[3][1].energy = 55;
+  towers[2][0].crystals[4][4].energy = 66;
+  towers[2][1].crystals[3][3].energy = 77;
+  towers[2][1].crystals[3][4].energy = 88;
+  towers[3][0].crystals[2][1].energy = 99;
+  towers[4][1].crystals[3][1].energy = 95;
+  towers[5][0].crystals[3][3].energy = 8;
+  towers[6][1].crystals[4][0].energy = 25;
+  towers[6][0].crystals[4][3].energy = 10;
+  towers[6][0].crystals[4][4].energy = 36;
+  towers[7][0].crystals[0][4].energy = 14;
+  towers[7][1].crystals[4][3].energy = 70;
+  towers[8][0].crystals[3][1].energy = 35;
+  towers[8][1].crystals[2][3].energy = 26;
+  towers[9][0].crystals[3][1].energy = 43;
+  towers[9][0].crystals[2][2].energy = 204;
+  towers[9][1].crystals[0][3].energy = 30;
+  towers[12][0].crystals[1][1].energy = 170;
+  towers[14][1].crystals[4][2].energy = 123;
 
 //  towers[0][0].crystals[0][3].energy = 11;
 //  towers[0][0].crystals[0][4].energy = 22;
@@ -163,17 +164,19 @@ int main(int argn, char *argp[]) {
   uint64_t packed[ETA][PHI][6];
   for (size_t i = 0; i < ETA; i++) {
     for (size_t k = 0; k < PHI; k++) {
+      std::cout<<"                                          ------- ["<<i<<"]["<<k<<"] -------"<<endl;
       towers[i][k].pack(packed[i][k]);
+      std::cout<<endl;
     }
   }
 
 
-  APxLinkData link_in(24);
+  APxLinkData link_in(ETA*PHI);
 
   for (size_t i = 0; i < 6; i++) {
-    for (size_t k = 0; k < 24; k++) {
-      size_t phi = k % 4;
-      size_t eta = k / 4;
+    for (size_t k = 0; k < ETA*PHI; k++) {
+      size_t phi = k % PHI;
+      size_t eta = k / PHI;
       link_in.add(i, k, {0x00, packed[eta][phi][i]});
     }
   }

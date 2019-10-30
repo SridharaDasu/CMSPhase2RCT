@@ -35,8 +35,6 @@ struct Crystal {
    bool spike;
 };
 
-
-
 /* ECAL cluster object definition */
 struct Cluster {
    Cluster() : et(0), tower_phi(0), tower_eta(0), peak_phi(0), peak_eta(0) {};
@@ -130,33 +128,22 @@ void Cluster::stitchRegion(const Cluster in[ETA][PHI], Cluster out[ETA][PHI]) {
 #pragma HLS ARRAY_PARTITION variable=stitch_eta complete dim=0
 #pragma HLS ARRAY_PARTITION variable=stitch_phi complete dim=0
 
-   int ntEta ;                                       
-   int ntPhi ; 
 
    for (size_t teta = 0; teta < ETA; teta++) {
 #pragma LOOP UNROLL
       for (size_t tphi = 0; tphi < PHI; tphi++) {
 #pragma LOOP UNROLL
 	 stitch_eta[teta][tphi] = in[teta][tphi];
-
       }
    }
-   
+
    // Stitch in eta
-   for (size_t teta = 0; teta < ETA; teta++) {
+   for (size_t teta = 1; teta < ETA; teta++) {
 #pragma LOOP UNROLL
       for (size_t tphi = 0; tphi < PHI; tphi++) {
 #pragma LOOP UNROLL
-	 ntEta = -1;                                       
-	 ntPhi = -1; 
-	 if(teta !=0 && in[teta][tphi].peak_eta == 0 && in[teta-1][tphi].peak_eta == 4 ){
-	    ntEta = teta - 1;
-	    ntPhi = tphi;
-	 }
-
-	 if(ntEta >=0 && ntPhi >= 0){
+	 if(in[teta][tphi].peak_eta == 0 && in[teta-1][tphi].peak_eta == 4 )
 	    Cluster::stitchNeigbours(in[teta][tphi], in[teta-1][tphi], stitch_eta[teta][tphi], stitch_eta[teta-1][tphi]);
-	 }
       }
    }
 
@@ -165,25 +152,18 @@ void Cluster::stitchRegion(const Cluster in[ETA][PHI], Cluster out[ETA][PHI]) {
       for (size_t tphi = 0; tphi < PHI; tphi++) {
 #pragma LOOP UNROLL
 	 stitch_phi[teta][tphi] = stitch_eta[teta][tphi];
-	 out[teta][tphi] = stitch_eta[teta][tphi];
+	 out[teta][tphi]    = stitch_eta[teta][tphi];
       }
    }
 
    // Stitch in phi
    for (size_t teta = 0; teta < ETA; teta++) {
 #pragma LOOP UNROLL
-      for (size_t tphi = 0; tphi < PHI; tphi++) {
+      for (size_t tphi = 1; tphi < PHI; tphi++) {
 #pragma LOOP UNROLL
-	 ntEta = -1;                                       
-	 ntPhi = -1; 
-	 if(tphi !=0 && stitch_phi[teta][tphi].peak_phi == 0 && stitch_phi[teta][tphi-1].peak_phi == 4 ){
-	    ntEta = teta;
-	    ntPhi = tphi-1;
-	 }
-
-	 if(ntEta >=0 && ntPhi >= 0){
+	 
+	 if(stitch_phi[teta][tphi].peak_phi == 0 && stitch_phi[teta][tphi-1].peak_phi == 4 )
 	    Cluster::stitchNeigbours(stitch_phi[teta][tphi], stitch_phi[teta][tphi-1], out[teta][tphi], out[teta][tphi-1]);
-	 }
       }
    }
 
@@ -265,7 +245,7 @@ Cluster Tower::computeCluster(const ap_uint<6> towerEta, const ap_uint<4> towerP
       int eta = peakEta + dEta;
       clusterEt = (eta >= 0 && eta < 5)? clusterEt + eta_strip[eta] : clusterEt;
    }
-   
+
    Cluster cluster;
    cluster.et = clusterEt;
    cluster.tower_eta = towerEta;

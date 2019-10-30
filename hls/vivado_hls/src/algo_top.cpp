@@ -84,6 +84,12 @@ inline Tower unpackInputLink(hls::stream<axiword> &link) {
    return tower;
 }
 
+//(Tower in[][], Tower out[][])
+//
+//Tower ecalTowers[TOWERS_IN_ETA][TOWERS_IN_PHI];
+// unpackInputLink(link_in[linkn]);
+
+
 void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> link_out[N_OUTPUT_LINKS]) {
 #pragma HLS INTERFACE axis port=link_in
 #pragma HLS INTERFACE axis port=link_out
@@ -97,32 +103,33 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
    Tower ecalTowers[TOWERS_IN_ETA][TOWERS_IN_PHI];
 #pragma HLS ARRAY_PARTITION variable=ecalTowers complete dim=0
 
-   for (size_t i = 0; i < TOWERS_IN_ETA; i++) {
+   for (size_t i = 0; i < TOWERS_IN_ETA * TOWERS_IN_PHI; i++) {
 #pragma LOOP UNROLL
-      for (size_t j = 0; j < TOWERS_IN_PHI; j++) {
-#pragma LOOP UNROLL
-	 const size_t linkn = (i * TOWERS_IN_PHI + j);
-	 ecalTowers[i][j] = unpackInputLink(link_in[linkn]);
-	 //#ifndef __SYNTHESIS__
-	 //	 cout<<"ecalTowers["<<i<<"]["<<j<<"] = "<<ecalTowers[i][j].toString()<<std::endl;
-	 //#endif
-      }
+
+      size_t  ieta = i / TOWERS_IN_PHI;  
+      size_t  iphi = i % TOWERS_IN_PHI;
+      ecalTowers[ieta][iphi] = unpackInputLink(link_in[i]);
+
+#ifndef __SYNTHESIS__
+      cout<<"ecalTowers["<<ieta<<"]["<<iphi<<"]:"<<endl<<ecalTowers[ieta][iphi].toString()<<std::endl;
+#endif
+
    }
 
    // Step 2: Compute clusters
    Cluster ecalClusters[TOWERS_IN_ETA][TOWERS_IN_PHI];
 #pragma HLS ARRAY_PARTITION variable=ecalClusters complete dim=0
 
-   for (size_t i = 0; i < TOWERS_IN_ETA; i++) {
+   for (size_t i = 0; i < TOWERS_IN_ETA * TOWERS_IN_PHI; i++) {
 #pragma LOOP UNROLL
-      for (size_t j = 0; j < TOWERS_IN_PHI; j++) {
-#pragma LOOP UNROLL
-	 uint16_t towerEt = 0;
-	 ecalClusters[i][j] = ecalTowers[i][j].computeCluster(i, j, towerEt);
+      size_t  ieta = i / TOWERS_IN_PHI;  
+      size_t  iphi = i % TOWERS_IN_PHI;
+      uint16_t towerEt = 0;
+      ecalClusters[ieta][iphi] = ecalTowers[ieta][iphi].computeCluster(ieta, iphi, towerEt);
+
 #ifndef __SYNTHESIS__
-	 cout << "Clustering["<<i<<"]["<<j<<"]:"<< ecalClusters[i][j].toString() << endl;
+      cout << "Clustering["<<ieta<<"]["<<iphi<<"]:"<< ecalClusters[ieta][iphi].toString() << endl;
 #endif
-      }
    }
 
    // Step 3: Merge neighbor clusters
@@ -142,24 +149,30 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
    // Step 4: Pack the outputs
    for (size_t i = 0; i < N_OUTPUT_LINKS; i++) {
 #pragma LOOP UNROLL
-
       for (size_t j = 0; j < N_OUTPUT_WORDS_PER_FRAME-1; j++) {
 #pragma LOOP UNROLL
 
-	 const size_t eta_offset = (j*2) + 10*(i%2);
-	 const size_t phi_offset = i/2;
+	 const size_t phi = i/2; // Two links carry information for each eta
+	 const size_t eta =  j*2 + (i%2)*10;                                                                                                                                                                
 
 	 axiword r; r.last = 0; r.user = 0;
 
-	 if (eta_offset >= TOWERS_IN_ETA) {
-	    r.data = 0;
-	 } else {
-	    r.data = ((uint64_t)ecalClustersStitched[eta_offset+1][phi_offset] << 32) |
-           	      ((uint64_t)ecalClustersStitched[eta_offset][phi_offset]);
-
-//	    cout<< "["<<eta_offset<<"]["<<phi_offset<<"].et : "  << ecalClustersStitched[eta_offset][phi_offset].et<<std::endl;
-//	    cout<< "["<<eta_offset+1<<"]["<<phi_offset<<"].et : "<< ecalClustersStitched[eta_offset+1][phi_offset].et<<std::endl;
+	 if( TOWERS_IN_ETA%2 == 0 && eta < TOWERS_IN_ETA){ // if eta is an even number
+	    r.data = ((uint64_t)ecalClustersStitched[eta+1][phi] << 32) |
+	       ((uint64_t)ecalClustersStitched[eta][phi]);
 	 }
+	 else if(TOWERS_IN_ETA%2 == 0 && eta >= TOWERS_IN_ETA)
+	    r.data = 0;
+
+	 if(TOWERS_IN_ETA%2 && eta < TOWERS_IN_ETA-1){ // it eta has odd geometry
+	    r.data = ((uint64_t)ecalClustersStitched[eta+1][phi] << 32) |
+	       ((uint64_t)ecalClustersStitched[eta][phi]);
+	 }
+	 else if(TOWERS_IN_ETA%2 && eta == TOWERS_IN_ETA-1){
+	    r.data = ((uint64_t)ecalClustersStitched[eta][phi]);
+	 }
+	 else if(TOWERS_IN_ETA%2 && eta > TOWERS_IN_ETA-1)
+	    r.data = 0;
 
 	 link_out[i].write(r);
 
