@@ -21,6 +21,7 @@ inline Tower unpackInputLink(hls::stream<axiword> &link) {
    uint8_t carry = 0;
 
    for (size_t i = 0; i < N_WORDS_PER_FRAME; i++) {
+#pragma LOOP UNROLL
 #ifndef __SYNTHESIS__
       // Avoid simulation warnings
       if (link.empty()) continue;
@@ -83,12 +84,6 @@ inline Tower unpackInputLink(hls::stream<axiword> &link) {
 
    return tower;
 }
-
-//(Tower in[][], Tower out[][])
-//
-//Tower ecalTowers[TOWERS_IN_ETA][TOWERS_IN_PHI];
-// unpackInputLink(link_in[linkn]);
-
 
 void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> link_out[N_OUTPUT_LINKS]) {
 #pragma HLS INTERFACE axis port=link_in
