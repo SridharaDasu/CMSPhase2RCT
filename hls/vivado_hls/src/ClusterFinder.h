@@ -209,12 +209,15 @@ Cluster Tower::computeCluster(const ap_uint<6> towerEta, const ap_uint<4> towerP
 #pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
 
    uint16_t phi_strip[5], eta_strip[5];
+#pragma HLS ARRAY_PARTITION variable=phi_strip complete dim=0
+#pragma HLS ARRAY_PARTITION variable=eta_strip complete dim=0
 
    // Compute strips
    for (size_t eta = 0; eta < 5; eta++) {
 #pragma LOOP UNROLL
       eta_strip[eta] = 0;
       for (size_t phi = 0; phi < 5; phi++) {
+#pragma LOOP UNROLL
 	 eta_strip[eta] += this->crystals[eta][phi].energy;
       }
    }
@@ -223,6 +226,7 @@ Cluster Tower::computeCluster(const ap_uint<6> towerEta, const ap_uint<4> towerP
 #pragma LOOP UNROLL
       phi_strip[phi] = 0;
       for (size_t eta = 0; eta < 5; eta++) {
+#pragma LOOP UNROLL
 	 phi_strip[phi] += this->crystals[eta][phi].energy;
       }
    }
@@ -242,6 +246,7 @@ Cluster Tower::computeCluster(const ap_uint<6> towerEta, const ap_uint<4> towerP
    // Small cluster ET is just the 3x5 around the peak
    uint16_t clusterEt = 0;
    for (int dEta = -1; dEta <= 1; dEta++) {
+#pragma LOOP UNROLL
       int eta = peakEta + dEta;
       clusterEt = (eta >= 0 && eta < 5)? clusterEt + eta_strip[eta] : clusterEt;
    }
@@ -274,8 +279,6 @@ inline uint16_t Tower::getPeakBinOf5(const uint16_t et[5], const uint16_t etSum)
    else iAve = 4;
    return iAve;
 }
-
-
 
 
 #endif /*!__CLUSTERFINDER_H__*/
