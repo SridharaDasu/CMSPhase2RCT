@@ -199,6 +199,17 @@ struct Tower {
       }
    }
 
+   Tower& operator=(const Tower& rhs) {
+      for (size_t i = 0; i < 5; i++) {
+#pragma LOOP UNROLL
+	 for (size_t j = 0; j < 5; j++) {
+#pragma LOOP UNROLL
+	    crystals[i][j] = rhs.crystals[i][j];
+	 }
+      }
+      return *this;
+   }
+
 
    Cluster computeCluster(const ap_uint<6> towerEta, const ap_uint<4> towerPhi, uint16_t &towerEt);
 
