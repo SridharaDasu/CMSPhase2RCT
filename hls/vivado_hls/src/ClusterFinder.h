@@ -18,6 +18,13 @@ struct Crystal {
       this->spike = i >> 13;
    }
 
+   Crystal& operator=(const Crystal& rhs) {
+      energy = rhs.energy;
+      timing = rhs.timing;
+      spike  = rhs.spike;
+      return *this;
+   }
+
    inline operator uint16_t() {
       return  ((uint16_t)(this->spike) << 13) |
 	 ((uint16_t)(this->timing) << 10) |
@@ -49,6 +56,16 @@ struct Cluster {
       this->tower_eta = i >> 20;
       this->peak_phi = i >> 26;
       this->peak_eta = i >> 29;
+   }
+
+   Cluster& operator=(const Cluster& rhs) {
+      et        = rhs.et;
+      tower_phi = rhs.tower_phi;
+      tower_eta = rhs.tower_eta;
+      peak_phi  = rhs.peak_phi;
+      peak_eta  = rhs.peak_eta;
+
+      return *this;
    }
 
    inline friend bool operator >(const Cluster& c1, const Cluster& c2) {
@@ -181,6 +198,7 @@ struct Tower {
 	 }
       }
    }
+
 
    Cluster computeCluster(const ap_uint<6> towerEta, const ap_uint<4> towerPhi, uint16_t &towerEt);
 
