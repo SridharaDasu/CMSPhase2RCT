@@ -1,3 +1,4 @@
+
 #include "algo_top_parameters.h"
 #include "algo_top.h"
 #include <algorithm>
@@ -10,11 +11,11 @@ using namespace algo;
 
 // Each input link carries the information of a 5x5 region
 // Last 16-bits are reserved for CRC
-Tower processECALLinkData(hls::stream<axiword> &link) {
+void processECALLinkData(hls::stream<axiword> &link, Crystal crystals[5][5]) {
+#pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
 #pragma HLS PIPELINE II=N_WORDS_PER_FRAME
 #pragma HLS INTERFACE axis port=link
-
-  Crystal crystals[5][5];
+#pragma HLS INLINE
 
   uint8_t carry = 0;
 
@@ -80,14 +81,12 @@ Tower processECALLinkData(hls::stream<axiword> &link) {
     carry = data >> 56;
   }
   
-  return makeTower(crystals);
-
 }
 
 void stitchAllNeighbors(Tower in[N_INPUT_LINKS], Tower out[N_INPUT_LINKS]) {
-#pragma HLS PIPELINE II=N_WORDS_PER_FRAME
 #pragma HLS ARRAY_PARTITION variable=in complete dim=0
 #pragma HLS ARRAY_PARTITION variable=out complete dim=0
+#pragma HLS PIPELINE II=1
 
   Tower etaStitched[N_INPUT_LINKS];
 #pragma HLS ARRAY_PARTITION variable=etaStitched complete dim=0
@@ -136,7 +135,10 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
   // Step First: Unpack and process link/tower at a time
   for (size_t i = 0; i < N_INPUT_LINKS; i++) {
 #pragma LOOP UNROLL
-    towerLevelECALSummary[i] = processECALLinkData(link_in[i]);
+    Crystal crystals[5][5];
+#pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
+    processECALLinkData(link_in[i], crystals);
+    towerLevelECALSummary[i] = makeTower(crystals);
   }
 
   ap_uint<32> ecalSummary = 0;
