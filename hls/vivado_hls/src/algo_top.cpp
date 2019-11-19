@@ -88,36 +88,57 @@ void stitchAllNeighbors(Tower in[N_INPUT_LINKS], Tower out[N_INPUT_LINKS]) {
 #pragma HLS ARRAY_PARTITION variable=out complete dim=0
 #pragma HLS PIPELINE II=1
 
-  Tower etaStitched[N_INPUT_LINKS];
-#pragma HLS ARRAY_PARTITION variable=etaStitched complete dim=0
+  Tower etaStitched1[N_INPUT_LINKS];
+#pragma HLS ARRAY_PARTITION variable=etaStitched1 complete dim=0
   for (size_t iEta = 1; iEta < TOWERS_IN_ETA; iEta+=2) {
 #pragma LOOP UNROLL
     for (size_t iPhi = 0; iPhi < TOWERS_IN_PHI; iPhi++) {
 #pragma LOOP UNROLL
       size_t iLink1 = iPhi * TOWERS_IN_ETA  + iEta;
       size_t iLink2 = iLink1 - 1;
-      if(iEta > 0 && in[iLink1].peak_eta() == 0 && in[iLink2].peak_eta() == 4 )
-        stitchNeigbours(in[iLink1], in[iLink2], etaStitched[iLink1], etaStitched[iLink2]);
+      if(in[iLink1].peak_eta() == 0 && in[iLink2].peak_eta() == 4 &&
+	 in[iLink1].peak_phi() == in[iLink2].peak_phi())
+        stitchNeigbours(in[iLink1], in[iLink2], etaStitched1[iLink1], etaStitched1[iLink2]);
       else {
-        etaStitched[iLink1] = in[iLink1];
-        etaStitched[iLink2] = in[iLink2];
+        etaStitched1[iLink1] = in[iLink1];
+        etaStitched1[iLink2] = in[iLink2];
       }
     }
   }
+  etaStitched1[16] = in[16];
+  etaStitched1[33] = in[33];
 
-  // Stitch in phi
-  for (size_t iEta = 0; iEta < TOWERS_IN_ETA; iEta++) {
+  Tower etaStitched2[N_INPUT_LINKS];
+#pragma HLS ARRAY_PARTITION variable=etaStitched2 complete dim=0
+  for (size_t iEta = 2; iEta < TOWERS_IN_ETA; iEta+=2) {
 #pragma LOOP UNROLL
-    for (size_t iPhi = 1; iPhi < TOWERS_IN_PHI; iPhi+=2) {
+    for (size_t iPhi = 0; iPhi < TOWERS_IN_PHI; iPhi++) {
 #pragma LOOP UNROLL
       size_t iLink1 = iPhi * TOWERS_IN_ETA  + iEta;
-      size_t iLink2 = (iPhi - 1) * TOWERS_IN_ETA + iEta;
-      if(iPhi > 0 && etaStitched[iLink1].peak_phi() == 0 && etaStitched[iLink2].peak_phi() == 4 )
-        stitchNeigbours(etaStitched[iLink1], etaStitched[iLink2], out[iLink1], out[iLink2]);
+      size_t iLink2 = iLink1 - 1;
+      if(etaStitched1[iLink1].peak_eta() == 0 && etaStitched1[iLink2].peak_eta() == 4 &&
+	 etaStitched1[iLink1].peak_phi() ==etaStitched1[iLink2].peak_phi())
+        stitchNeigbours(etaStitched1[iLink1], etaStitched1[iLink2], etaStitched2[iLink1], etaStitched2[iLink2]);
       else {
-        out[iLink1] = etaStitched[iLink1];
-        out[iLink2] = etaStitched[iLink2];
+        etaStitched2[iLink1] = etaStitched1[iLink1];
+        etaStitched2[iLink2] = etaStitched1[iLink2];
       }
+    }
+  }
+  etaStitched2[0] = etaStitched1[0];
+  etaStitched2[17] = etaStitched1[17];
+
+  // Stitch in phi (there is only one needed as TOWERS_IN_PHI == 2
+  for (size_t iEta = 0; iEta < TOWERS_IN_ETA; iEta++) {
+#pragma LOOP UNROLL
+    size_t iLink1 = TOWERS_IN_ETA  + iEta;
+    size_t iLink2 = iEta;
+    if(etaStitched2[iLink1].peak_phi() == 0 && etaStitched2[iLink2].peak_phi() == 4 &&
+       etaStitched2[iLink1].peak_eta() == etaStitched2[iLink2].peak_eta())
+      stitchNeigbours(etaStitched2[iLink1], etaStitched2[iLink2], out[iLink1], out[iLink2]);
+    else {
+      out[iLink1] = etaStitched2[iLink1];
+      out[iLink2] = etaStitched2[iLink2];
     }
   }
 
@@ -150,12 +171,6 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
   Tower stitchedTowerLevelECALSummary[N_INPUT_LINKS];
 #pragma HLS ARRAY_PARTITION variable=stitchedTowerLevelECALSummary complete dim=0
   stitchAllNeighbors(towerLevelECALSummary, stitchedTowerLevelECALSummary);
-  /*
-  for (size_t i = 0; i < N_INPUT_LINKS; i++) {
-#pragma LOOP UNROLL
-    stitchedTowerLevelECALSummary[i] = towerLevelECALSummary[i];
-  }
-  */
 
   // Step Last: Pack the outputs
   ap_uint<64> ecalData = ecalSummary + (ecalSummary << 32);
@@ -213,3 +228,4 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
 #endif /* !ALGO_PASSTHROUGH */
 
 }
+
