@@ -1,4 +1,3 @@
-
 #include "algo_top_parameters.h"
 #include "algo_top.h"
 #include <algorithm>
@@ -11,13 +10,11 @@ using namespace algo;
 
 // Each input link carries the information of a 5x5 region
 // Last 16-bits are reserved for CRC
-void processECALLinkData(hls::stream<axiword> &link, Crystal crystals[5][5]) {
-#pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
-#pragma HLS PIPELINE II=N_WORDS_PER_FRAME
-#pragma HLS INTERFACE axis port=link
+void processECALLinkData(hls::stream<axiword> &link, ap_uint<64> words[N_WORDS_PER_FRAME]) {
 #pragma HLS INLINE
-
-  uint8_t carry = 0;
+#pragma HLS INTERFACE axis port=link
+#pragma HLS PIPELINE II=N_WORDS_PER_FRAME
+#pragma HLS ARRAY_PARTITION variable=words complete dim=0
 
   for (size_t i = 0; i < N_WORDS_PER_FRAME; i++) {
 #pragma LOOP UNROLL
@@ -26,67 +23,56 @@ void processECALLinkData(hls::stream<axiword> &link, Crystal crystals[5][5]) {
     if (link.empty()) continue;
 #endif
 
-    uint64_t data = link.read().data;
+    words[i] = link.read().data;
 
-    switch (i) {
-    case 0: {
-      for (size_t k = 0; k < 4; k++) {
-#pragma LOOP UNROLL
-        crystals[0][k] = Crystal(data >> (k * 14));
-      }
-    } break;
-    case 1: {
-      crystals[0][4] = Crystal((data << 8) | carry);
-      for (size_t k = 0; k < 4; k++) {
-#pragma LOOP UNROLL
-        crystals[1][k] = Crystal(data >> (k * 14 + 6));
-      }
-    } break;
-    case 2: {
-      crystals[1][4] = Crystal(data);
-      for (size_t k = 0; k < 3; k++) {
-#pragma LOOP UNROLL
-        crystals[2][k] = Crystal(data >> (k * 14 + 14));
-      }
-    } break;
-    case 3: {
-      crystals[2][3] = Crystal((data << 8) | carry);
-      crystals[2][4] = Crystal(data >> 6);
-      for (size_t k = 0; k < 3; k++) {
-#pragma LOOP UNROLL
-        crystals[3][k] = Crystal(data >> (k * 14 + 20));
-      }
-    } break;
-    case 4: {
-      for (size_t k = 0; k < 2; k++) {
-#pragma LOOP UNROLL
-        crystals[3][k+3] = Crystal(data >> (k * 14));
-      }
-      for (size_t k = 0; k < 2; k++) {
-#pragma LOOP UNROLL
-        crystals[4][k] = Crystal(data >> (k * 14 + 28));
-      }
-    } break;
-    case 5: {
-      crystals[4][2] = Crystal((data << 8) | carry);
-      for (size_t k = 0; k < 2; k++) {
-#pragma LOOP UNROLL
-        crystals[4][k+3] = Crystal(data >> (k * 14 + 6));
-      }
-    } break;
-    default: break;
-    }
-      
-    // Remaining data to be used on the next cycle
-    carry = data >> 56;
   }
   
 }
 
+void makeCrystals(ap_uint<64> words[N_WORDS_PER_FRAME], Crystal crystals[5][5]) {
+#pragma HLS PIPELINE II=N_WORDS_PER_FRAME
+#pragma HLS ARRAY_PARTITION variable=words complete dim=0
+#pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
+  crystals[0][0] = Crystal(words[0].range( 0, 13));
+  crystals[0][1] = Crystal(words[0].range(14, 27));
+  crystals[0][2] = Crystal(words[0].range(28, 41));
+  crystals[0][3] = Crystal(words[0].range(42, 55));
+  ap_uint<8> leftover0 = words[0].range(56, 63);
+  crystals[0][0] = Crystal(words[1].range( 0, 13));
+  crystals[1][1] = Crystal(words[1].range(14, 27));
+  crystals[1][2] = Crystal(words[1].range(28, 41));
+  crystals[1][3] = Crystal(words[1].range(42, 55));
+  ap_uint<8> leftover1 = words[1].range(56, 63);
+  crystals[2][0] = Crystal(words[2].range( 0, 13));
+  crystals[2][1] = Crystal(words[2].range(14, 27));
+  crystals[2][2] = Crystal(words[2].range(28, 41));
+  crystals[2][3] = Crystal(words[2].range(42, 55));
+  ap_uint<8> leftover2 = words[2].range(56, 63);
+  crystals[3][0] = Crystal(words[3].range( 0, 13));
+  crystals[3][1] = Crystal(words[3].range(14, 27));
+  crystals[3][2] = Crystal(words[3].range(28, 41));
+  crystals[3][3] = Crystal(words[3].range(42, 55));
+  ap_uint<8> leftover3 = words[3].range(56, 63);
+  crystals[4][0] = Crystal(words[4].range( 0, 13));
+  crystals[4][1] = Crystal(words[4].range(14, 27));
+  crystals[4][2] = Crystal(words[4].range(28, 41));
+  crystals[4][3] = Crystal(words[4].range(42, 55));
+  ap_uint<8> leftover4 = words[4].range(56, 63);
+  crystals[0][4] = Crystal(words[5].range( 0, 13));
+  crystals[1][4] = Crystal(words[5].range(14, 27));
+  crystals[2][4] = Crystal(words[5].range(28, 41));
+  crystals[3][4] = Crystal(words[5].range(42, 55));
+  ap_uint<8> leftover5 = words[5].range(56, 63);
+  ap_uint<14> crystalData44 = (((ap_uint<14>) (leftover1.range(0, 5) & 0x3F)) << 8)  | ((ap_uint<14>) leftover0);
+  crystals[4][4] = Crystal(crystalData44);
+  ap_uint<32> crc = (((ap_uint<32>) leftover5) << 24) | (((ap_uint<32>) leftover4) << 16) | (((ap_uint<32>) leftover3) << 8) | ((ap_uint<32>) leftover2);
+}
+
+
 void stitchAllNeighbors(Tower in[N_INPUT_LINKS], Tower out[N_INPUT_LINKS]) {
+#pragma HLS PIPELINE II=N_WORDS_PER_FRAME
 #pragma HLS ARRAY_PARTITION variable=in complete dim=0
 #pragma HLS ARRAY_PARTITION variable=out complete dim=0
-#pragma HLS PIPELINE II=1
 
   Tower etaStitched1[N_INPUT_LINKS];
 #pragma HLS ARRAY_PARTITION variable=etaStitched1 complete dim=0
@@ -145,22 +131,33 @@ void stitchAllNeighbors(Tower in[N_INPUT_LINKS], Tower out[N_INPUT_LINKS]) {
 }
 
 void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> link_out[N_OUTPUT_LINKS]) {
+#pragma HLS PIPELINE II=N_WORDS_PER_FRAME
 #pragma HLS INTERFACE axis port=link_in
 #pragma HLS INTERFACE axis port=link_out
-#pragma HLS PIPELINE II=N_WORDS_PER_FRAME
 
 #ifndef ALGO_PASSTHROUGH
 
+  // Step First: Unpack
+  ap_uint<64> words[N_INPUT_LINKS][N_WORDS_PER_FRAME];
+#pragma HLS ARRAY_PARTITION variable=words complete dim=0
+  for (size_t i = 0; i < N_INPUT_LINKS; i++) {
+#pragma LOOP UNROLL
+    processECALLinkData(link_in[i], words[i]);
+  }
+
   Tower towerLevelECALSummary[N_INPUT_LINKS];
 #pragma HLS ARRAY_PARTITION variable=towerLevelECALSummary complete dim=0
-  // Step First: Unpack and process link/tower at a time
   for (size_t i = 0; i < N_INPUT_LINKS; i++) {
 #pragma LOOP UNROLL
     Crystal crystals[5][5];
 #pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
-    processECALLinkData(link_in[i], crystals);
-    towerLevelECALSummary[i] = makeTower(crystals);
+    // Make crystals
+    makeCrystals(words[i], crystals);
+    // Make towers
+    towerLevelECALSummary[i] = makeTower(crystals); // Tower(i, i, 0, 0, 0, 0)
   }
+
+  // Compute total ECAL ET
 
   ap_uint<32> ecalSummary = 0;
   for (size_t i = 0; i < N_INPUT_LINKS; i++) {
@@ -168,9 +165,15 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
     ecalSummary += towerLevelECALSummary[i].tower_et();
   }
 
+  // Stitch neighboring towers
+
   Tower stitchedTowerLevelECALSummary[N_INPUT_LINKS];
 #pragma HLS ARRAY_PARTITION variable=stitchedTowerLevelECALSummary complete dim=0
-  stitchAllNeighbors(towerLevelECALSummary, stitchedTowerLevelECALSummary);
+  // stitchAllNeighbors(towerLevelECALSummary, stitchedTowerLevelECALSummary);
+  for (size_t i = 0; i < N_INPUT_LINKS; i++) {
+#pragma LOOP UNROLL
+    stitchedTowerLevelECALSummary[i] = towerLevelECALSummary[i];
+  }
 
   // Step Last: Pack the outputs
   ap_uint<64> ecalData = ecalSummary + (ecalSummary << 32);

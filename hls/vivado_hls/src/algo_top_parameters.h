@@ -13,6 +13,8 @@
 
 // Number of data words per processing cycle/frame
 const int N_WORDS_PER_FRAME	= 6;
+// Word has 64 bits
+const int N_SHORTS_PER_WORD = 4;
 
 /** Algorithm specific parameters **/
 #define TOWERS_IN_ETA 17
