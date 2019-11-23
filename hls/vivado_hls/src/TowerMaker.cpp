@@ -2,8 +2,6 @@
 #include "TowerMaker.h"
 
 ap_uint<3> getPeakBinOf5(const ap_uint<12> et[5], const ap_uint<16> etSum) {
-#pragma HLS PIPELINE II=N_WORDS_PER_FRAME
-#pragma HLS ARRAY_PARTITION variable=et complete dim=0
   ap_uint<12> iEtSum12 =
     (et[0] >> 1)                +  // 0.5xet[0]
     (et[1] >> 1) + et[1]        +  // 1.5xet[1]
@@ -27,28 +25,20 @@ ap_uint<3> getPeakBinOf5(const ap_uint<12> et[5], const ap_uint<16> etSum) {
 }
 
 Tower makeTower(const Crystal crystals[5][5]) {
-#pragma HLS PIPELINE II=N_WORDS_PER_FRAME
-#pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
 
   ap_uint<12> phi_strip[5], eta_strip[5];
-#pragma HLS ARRAY_PARTITION variable=phi_strip complete dim=0
-#pragma HLS ARRAY_PARTITION variable=eta_strip complete dim=0
 
   // Compute strips
   for (size_t eta = 0; eta < 5; eta++) {
-#pragma LOOP UNROLL
     eta_strip[eta] = 0;
     for (size_t phi = 0; phi < 5; phi++) {
-#pragma LOOP UNROLL
       eta_strip[eta] += crystals[eta][phi].energy;
     }
   }
 
   for (size_t phi = 0; phi < 5; phi++) {
-#pragma LOOP UNROLL
     phi_strip[phi] = 0;
     for (size_t eta = 0; eta < 5; eta++) {
-#pragma LOOP UNROLL
       phi_strip[phi] += crystals[eta][phi].energy;
     }
   }
@@ -56,7 +46,6 @@ Tower makeTower(const Crystal crystals[5][5]) {
   // Compute tower energy
   ap_uint<16> tet = 0;
   for (size_t eta = 0; eta < 5; eta++) {
-#pragma LOOP UNROLL
     tet += eta_strip[eta];
   }
 
@@ -67,7 +56,6 @@ Tower makeTower(const Crystal crystals[5][5]) {
   // Small cluster ET is just the 3x5 around the peak
   uint16_t clusterEt = 0;
   for (int dEta = -1; dEta <= 1; dEta++) {
-#pragma LOOP UNROLL
     int eta = peakEta + dEta;
     if (eta >= 0 && eta < 5) {
       clusterEt += eta_strip[eta];
@@ -106,7 +94,6 @@ Tower makeTower(const Crystal crystals[5][5]) {
 }
 
 void stitchNeigbours(Tower Ai, Tower Bi, Tower &Ao, Tower &Bo) {
-#pragma HLS PIPELINE II=N_WORDS_PER_FRAME
   // Check that the clusters are neigbhors in eta or phi
   ap_uint<12> cluster_et = Ai.cluster_et() + Bi.cluster_et();
   if(Ai.cluster_et() > Bi.cluster_et()){
