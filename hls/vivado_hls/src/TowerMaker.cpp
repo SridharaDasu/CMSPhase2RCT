@@ -35,7 +35,7 @@ Tower makeTower(const Crystal crystals[5][5]) {
 
   // Compute strips
   for (size_t eta = 0; eta < 5; eta++) {
-#pragma HLS PIPELINE
+#pragma HLS UNROLL
     eta_strip[eta] = 0;
     for (size_t phi = 0; phi < 5; phi++) {
       eta_strip[eta] += crystals[eta][phi].energy;
@@ -43,7 +43,7 @@ Tower makeTower(const Crystal crystals[5][5]) {
   }
 
   for (size_t phi = 0; phi < 5; phi++) {
-#pragma HLS PIPELINE
+#pragma HLS UNROLL
     phi_strip[phi] = 0;
     for (size_t eta = 0; eta < 5; eta++) {
       phi_strip[phi] += crystals[eta][phi].energy;
@@ -101,6 +101,7 @@ Tower makeTower(const Crystal crystals[5][5]) {
 }
 
 void stitchNeigbours(Tower Ai, Tower Bi, Tower &Ao, Tower &Bo) {
+#pragma HLS PIPELINE
   // Check that the clusters are neigbhors in eta or phi
   ap_uint<12> cluster_et = Ai.cluster_et() + Bi.cluster_et();
   if(Ai.cluster_et() > Bi.cluster_et()){
