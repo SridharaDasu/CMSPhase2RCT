@@ -98,7 +98,7 @@ class Tower {
 };
 
 ap_uint<3> getPeakBinOf5(const ap_uint<12> et[5], const ap_uint<16> etSum);
-Tower makeTower(const Crystal crystals[5][5]);
+void makeTower(const Crystal crystals[5][5], Tower &tower);
 void stitchNeigbours(Tower Ai, Tower Bi, Tower &Ao, Tower &B);
 
 #endif /*!__TOWERMAKER_H__*/

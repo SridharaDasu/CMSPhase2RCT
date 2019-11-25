@@ -26,7 +26,7 @@ ap_uint<3> getPeakBinOf5(const ap_uint<12> et[5], const ap_uint<16> etSum) {
   return iAve;
 }
 
-Tower makeTower(const Crystal crystals[5][5]) {
+void makeTower(const Crystal crystals[5][5], Tower &tower) {
 #pragma HLS PIPELINE
 #pragma HLS ARRAY_PARTITION variable=crystals
   ap_uint<12> phi_strip[5], eta_strip[5];
@@ -35,7 +35,6 @@ Tower makeTower(const Crystal crystals[5][5]) {
 
   // Compute strips
   for (size_t eta = 0; eta < 5; eta++) {
-#pragma HLS UNROLL
     eta_strip[eta] = 0;
     for (size_t phi = 0; phi < 5; phi++) {
       eta_strip[eta] += crystals[eta][phi].energy;
@@ -43,7 +42,6 @@ Tower makeTower(const Crystal crystals[5][5]) {
   }
 
   for (size_t phi = 0; phi < 5; phi++) {
-#pragma HLS UNROLL
     phi_strip[phi] = 0;
     for (size_t eta = 0; eta < 5; eta++) {
       phi_strip[phi] += crystals[eta][phi].energy;
@@ -94,9 +92,7 @@ Tower makeTower(const Crystal crystals[5][5]) {
     peakTime = 7;
   }
 
-  Tower tower(peggedClusterEt, peggedTEt, peakPhi, peakEta, peakTime, 0);
-
-  return tower;
+  tower = Tower(peggedClusterEt, peggedTEt, peakPhi, peakEta, peakTime, 0);
 
 }
 

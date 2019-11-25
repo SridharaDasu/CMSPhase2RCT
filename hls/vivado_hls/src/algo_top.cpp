@@ -87,7 +87,6 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
   ap_uint<64> input[N_INPUT_LINKS][N_WORDS_PER_FRAME];
 #pragma HLS ARRAY_PARTITION variable=input
   for (size_t i = 0; i < N_INPUT_LINKS; i++) {
-#pragma HLS UNROLL
 #pragma HLS PIPELINE
     processInputData(link_in[i], input[i]);
   }
@@ -96,14 +95,13 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
   Tower towerLevelECALSummary[N_INPUT_LINKS];
 #pragma HLS ARRAY_PARTITION variable=towerLevelECALSummary
   for (size_t i = 0; i < N_INPUT_LINKS; i++) {
-#pragma HLS UNROLL
 #pragma HLS PIPELINE
     Crystal crystals[5][5];
 #pragma HLS ARRAY_PARTITION variable=crystals
     // Make crystals
     makeCrystals(input[i], crystals);
     // Make towers
-    // towerLevelECALSummary[i] = makeTower(crystals);
+    makeTower(crystals, towerLevelECALSummary[i]);
   }
 
   // Compute total ECAL ET
@@ -116,7 +114,6 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
 #pragma HLS ARRAY_PARTITION variable=stitchedTowerLevelECALSummary
   // stitchAllNeighbors(towerLevelECALSummary, stitchedTowerLevelECALSummary);
   for (size_t i = 0; i < N_INPUT_LINKS; i++) {
-#pragma HLS UNROLL
 #pragma HLS PIPELINE
     stitchedTowerLevelECALSummary[i] = towerLevelECALSummary[i];
   }
@@ -129,7 +126,6 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
   size_t l = 0;
   ap_uint<64> ecalData = ecalSummary + (ecalSummary << 32);
   for (size_t i = 0; i < N_OUTPUT_LINKS; i++) {
-#pragma HLS UNROLL
 #pragma HLS PIPELINE
     for (size_t j = 0; j < N_OUTPUT_WORDS_PER_FRAME; j++) {
       if (l <= N_INPUT_LINKS - 2) {
@@ -148,7 +144,6 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
   // Step Last: Write the output
 
   for (size_t i = 0; i < N_OUTPUT_LINKS; i++) {
-#pragma HLS UNROLL
 #pragma HLS PIPELINE
     processOutputData(link_out[i], output[i]);
   }
