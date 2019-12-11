@@ -100,7 +100,6 @@ class Tower {
 ap_uint<3> getPeakBinOf5(const ap_uint<12> et[5], const ap_uint<16> etSum);
 void makeTower(const Crystal crystals[5][5], Tower &tower);
 ap_uint<32> makeECALSummary(Tower towerLevelECALSummary[N_INPUT_LINKS]);
-void stitchNeigbours(Tower Ai, Tower Bi, Tower &Ao, Tower &B);
-void stitchAllNeighbors(Tower in[N_INPUT_LINKS], Tower out[N_INPUT_LINKS]);
+void stitchNeighbors(Tower Ai, Tower Bi, Tower &Ao, Tower &B);
 
 #endif /*!__TOWERMAKER_H__*/
