@@ -1,9 +1,10 @@
+
 #include "algo_top_parameters.h"
 #include "TowerMaker.h"
 
-ap_uint<3> getPeakBinOf5(const ap_uint<12> et[5], const ap_uint<16> etSum) {
-#pragma HLS PIPELINE
+ap_uint<3> getPeakBinOf5(ap_uint<12> et[5], ap_uint<16> etSum) {
 #pragma HLS ARRAY_PARTITION variable=et
+#pragma HLS PIPELINE
   ap_uint<12> iEtSum12 =
     (et[0] >> 1)                +  // 0.5xet[0]
     (et[1] >> 1) + et[1]        +  // 1.5xet[1]
@@ -26,31 +27,38 @@ ap_uint<3> getPeakBinOf5(const ap_uint<12> et[5], const ap_uint<16> etSum) {
   return iAve;
 }
 
-void makeTower(const Crystal crystals[5][5], Tower &tower) {
-#pragma HLS PIPELINE
+void makeTower(CrystalGroup crystals, Tower &tower) {
 #pragma HLS ARRAY_PARTITION variable=crystals
-  ap_uint<12> phi_strip[5], eta_strip[5];
-#pragma HLS ARRAY_PARTITION variable=phi_strip
-#pragma HLS ARRAY_PARTITION variable=eta_strip
+#pragma HLS PIPELINE
 
   // Compute strips
-  for (size_t eta = 0; eta < 5; eta++) {
-    eta_strip[eta] = 0;
-    for (size_t phi = 0; phi < 5; phi++) {
-      eta_strip[eta] += crystals[eta][phi].energy;
-    }
+  ap_uint<12> eta_strip[5];
+#pragma HLS ARRAY_PARTITION variable=eta_strip
+ etaStripLoop: for (size_t eta = 0; eta < 5; eta++) {
+#pragma HLS UNROLL
+    Crystal phiCrystal0 = crystals.crystal(eta);
+    Crystal phiCrystal1 = crystals.phiPlus(eta+1);
+    Crystal phiCrystal2 = crystals.phiPlus(eta+2);
+    Crystal phiCrystal3 = crystals.phiPlus(eta+3);
+    Crystal phiCrystal4 = crystals.phiPlus(eta+4);
+    eta_strip[eta] = phiCrystal0.energy + phiCrystal1.energy + phiCrystal2.energy + phiCrystal3.energy + phiCrystal4.energy;
   }
 
-  for (size_t phi = 0; phi < 5; phi++) {
-    phi_strip[phi] = 0;
-    for (size_t eta = 0; eta < 5; eta++) {
-      phi_strip[phi] += crystals[eta][phi].energy;
-    }
+  ap_uint<12> phi_strip[5];
+#pragma HLS ARRAY_PARTITION variable=phi_strip
+ phiStripLoop: for (size_t phi = 0; phi < 5; phi++) {
+#pragma HLS UNROLL
+    Crystal etaCrystal0 = crystals.crystal(phi * 5);
+    Crystal etaCrystal1 = crystals.etaPlus(phi * 5 + 1);
+    Crystal etaCrystal2 = crystals.etaPlus(phi * 5 + 2);
+    Crystal etaCrystal3 = crystals.etaPlus(phi * 5 + 3);
+    Crystal etaCrystal4 = crystals.etaPlus(phi * 5 + 4);
+    phi_strip[phi] = etaCrystal0.energy + etaCrystal1.energy + etaCrystal2.energy + etaCrystal3.energy + etaCrystal4.energy;
   }
 
   // Compute tower energy
   ap_uint<16> tet = 0;
-  for (size_t eta = 0; eta < 5; eta++) {
+ towerEnergyLoop: for (size_t eta = 0; eta < 5; eta++) {
     tet += eta_strip[eta];
   }
 
@@ -60,7 +68,7 @@ void makeTower(const Crystal crystals[5][5], Tower &tower) {
 
   // Small cluster ET is just the 3x5 around the peak
   uint16_t clusterEt = 0;
-  for (int dEta = -1; dEta <= 1; dEta++) {
+ clusterEtLoop: for (int dEta = -1; dEta <= 1; dEta++) {
     int eta = peakEta + dEta;
     if (eta >= 0 && eta < 5) {
       clusterEt += eta_strip[eta];
@@ -85,8 +93,9 @@ void makeTower(const Crystal crystals[5][5], Tower &tower) {
     peggedTEt = tet;
   }
   ap_uint<3> peakTime;
-  if (peakEta < 5 && peakPhi < 5) {
-    peakTime = crystals[peakEta][peakPhi].time;
+  ap_uint<4> peakCrystal = peakEta + peakPhi * 5;
+  if (peakCrystal < 25) {
+    peakTime = crystals.crystal(peakCrystal).time;
   }
   else {
     peakTime = 7;
@@ -98,10 +107,9 @@ void makeTower(const Crystal crystals[5][5], Tower &tower) {
 
 ap_uint<32> makeECALSummary(Tower towerLevelECALSummary[N_INPUT_LINKS]) {
 #pragma HLS ARRAY_PARTITION variable=towerLevelECALSummary complete dim=0
-#pragma HLS latency max=6
 #pragma HLS PIPELINE
   ap_uint<32> ecalSummary = 0;
-  for (size_t i = 0; i < N_INPUT_LINKS; i++) {
+ ecalSummaryLoop: for (size_t i = 0; i < N_INPUT_LINKS; i++) {
     ecalSummary += towerLevelECALSummary[i].tower_et();
   }
   return ecalSummary;

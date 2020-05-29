@@ -15,9 +15,9 @@ class Crystal {
  Crystal() : energy(0), time(0), spike(0) {};
   
   Crystal(ap_uint<14> i) {
-    this->energy = i;
-    this->time = i >> 10;
-    this->spike = i >> 13;
+    this->energy = i.range(9, 0);
+    this->time = i.range(12, 10);
+    this->spike = i.range(13, 13);
   }
 
   Crystal& operator=(const Crystal& rhs) {
@@ -27,11 +27,11 @@ class Crystal {
     return *this;
   }
 
-    operator uint16_t() {
-      return  ((uint16_t)(this->spike) << 13) |
-        ((uint16_t)(this->time) << 10) |
-        this->energy;
-    }
+  operator uint16_t() {
+    return  ((uint16_t)(this->spike) << 13) |
+      ((uint16_t)(this->time) << 10) |
+      this->energy;
+  }
 
 #ifndef __SYNTHESIS__
   string toString() {
@@ -42,6 +42,64 @@ class Crystal {
   ap_uint<10> energy;
   ap_uint<3> time;
   ap_uint<1> spike;
+};
+
+/* Crystal group - 25 in a tower */
+
+class CrystalGroup {
+ public:
+  CrystalGroup() {;}
+
+  CrystalGroup(ap_uint<384> data) {
+#pragma HLS ARRAY_PARTITION variable=crystals complete dim=0
+    for (size_t i = 0, start = 0, end = 13; i < 25; i++, start += 14, end += 14) {
+#pragma LOOP UNROLL
+      this->crystals[i] = Crystal(data.range(end, start));
+    }
+  }
+  Crystal crystal(size_t i) {
+    if (i < 25) {
+      return crystals[i];
+    }
+    else {
+      return Crystal();
+    }
+  }
+  Crystal etaPlus(size_t i) {
+    if (i < 25 && (i % 5) < 4) {
+      return crystals[i + 1];
+    }
+    else {
+      return Crystal();
+    }
+  }
+
+  Crystal phiPlus(size_t i) {
+    if (i < 25 && (i / 5) < 4) {
+      return crystals[i + 5];
+    }
+    else {
+      return Crystal();
+    }
+  }
+  Crystal etaMinus(size_t i) {
+    if (i < 25 && (i % 5) > 0) {
+      return crystals[i - 1];
+    }
+    else {
+      return Crystal();
+    }
+  }
+  Crystal phiMinus(size_t i) {
+    if (i < 25 && (i / 5) > 0) {
+      return crystals[i - 5];
+    }
+    else {
+      return Crystal();
+    }
+  }
+ private:
+  Crystal crystals[25];
 };
 
 /* Tower has a ECAL cluster, total ET including HCAL and time information */
@@ -58,7 +116,7 @@ class Tower {
       (((ap_uint<32>) peak_eta) << 23) | 
       (((ap_uint<32>) peak_time) << 26) | 
       (((ap_uint<32>) hOe) << 29);
-      }
+  }
   
   Tower(uint32_t i) {data = i;}
   
@@ -97,8 +155,8 @@ class Tower {
   
 };
 
-ap_uint<3> getPeakBinOf5(const ap_uint<12> et[5], const ap_uint<16> etSum);
-void makeTower(const Crystal crystals[5][5], Tower &tower);
+ap_uint<3> getPeakBinOf5(ap_uint<12> et[5], ap_uint<16> etSum);
+void makeTower(CrystalGroup crystals, Tower &tower);
 ap_uint<32> makeECALSummary(Tower towerLevelECALSummary[N_INPUT_LINKS]);
 void stitchNeighbors(Tower Ai, Tower Bi, Tower &Ao, Tower &B);
 

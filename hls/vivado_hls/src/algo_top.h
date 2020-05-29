@@ -16,7 +16,7 @@ struct ap_axiu <D, U, 0, 0>{
 };
 
 namespace algo {
-	typedef ap_axiu<64, 8, 0, 0> axiword;
+	typedef ap_axiu<384, 8, 0, 0> axiword;
 }
 
 void algo_top(
