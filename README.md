@@ -1,15 +1,13 @@
 # APx Gen2 Phase2 RCT
 
-# Set up Xilinx env and licensing (uwlogin.cern.ch specific)
-```
-source /data/tools/Xilinx/Vivado/2018.2/settings64.sh
-source /data/setup_xilinx_lic.sh
-```
-
 Checkout existing RCT code from:
 ```
-git clone -b RCT-Gen2 git@github.com:SridharaDasu/CMSPhase2RCT.git
+git clone git@github.com:SridharaDasu/CMSPhase2RCT.git
 cd CMSPhase2RCT
+
+git checkout RCT-Gen2-384-Bit 
+
+source setEnv.sh #(uwlogin/beck independent)
 ```
 
 ## Simulation
@@ -21,10 +19,10 @@ or use
 ```
 
 ## Sythesis
-For HLS synthesis:
+For HLS synthesis and exporting RTl:
 ```bash
 cd hls/vivado_hls/
-vivado_hls -f run_hls.tcl synth=1 
+vivado_hls -f run_hls.tcl synth=1 export=1 
 ```
 
 export=1 is not working as of now, Use GUI to do that.
