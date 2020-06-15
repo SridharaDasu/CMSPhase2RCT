@@ -26,12 +26,18 @@ ap_uint<3> getPeakBinOf5(ap_uint<12> et[5], ap_uint<16> etSum) {
   return iAve;
 }
 
-void makeTower(CrystalGroup crystals, Tower &tower) {
-#pragma HLS ARRAY_PARTITION variable=crystals
+ap_uint<16> getSum(ap_uint<16> e0, ap_uint<16> e1, ap_uint<16> e2, ap_uint<16> e3, ap_uint<16> e4) {
 #pragma HLS PIPELINE II=6
+  ap_uint<16> e01 = e0 + e1;
+  ap_uint<16> e23 = e2 + e3;
+  ap_uint<16> e0123 = e01 + e23;
+  ap_uint<16> e = e0123 + e4;
+  return e;
+}
 
-  // Compute strips
-  ap_uint<12> eta_strip[5];
+void makeEtaStrip(CrystalGroup crystals, ap_uint<12> eta_strip[5]) {
+#pragma HLS PIPELINE II=6
+#pragma HLS ARRAY_PARTITION variable=crystals
 #pragma HLS ARRAY_PARTITION variable=eta_strip
  etaStripLoop: for (size_t eta = 0; eta < 5; eta++) {
 #pragma HLS UNROLL
@@ -40,14 +46,14 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
     Crystal phiCrystal2 = crystals.crystal(eta*5+2);
     Crystal phiCrystal3 = crystals.crystal(eta*5+3);
     Crystal phiCrystal4 = crystals.crystal(eta*5+4);
-    ap_uint<16> e01 = phiCrystal0.energy + phiCrystal1.energy;
-    ap_uint<16> e23 = phiCrystal2.energy + phiCrystal3.energy;
-    ap_uint<16> e4 = phiCrystal4.energy;
-    ap_uint<16> e0123 = e01 + e23;
-    eta_strip[eta] = e0123 + e4;
+    eta_strip[eta] = getSum(phiCrystal0.energy, phiCrystal1.energy, phiCrystal2.energy, phiCrystal3.energy, phiCrystal4.energy);
   }
+}
 
-  ap_uint<12> phi_strip[5];
+
+void makePhiStrip(CrystalGroup crystals, ap_uint<12> phi_strip[5]) {
+#pragma HLS PIPELINE II=6
+#pragma HLS ARRAY_PARTITION variable=crystals
 #pragma HLS ARRAY_PARTITION variable=phi_strip
  phiStripLoop: for (size_t phi = 0; phi < 5; phi++) {
 #pragma HLS UNROLL
@@ -56,19 +62,25 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
     Crystal etaCrystal2 = crystals.crystal(phi + (5*2));
     Crystal etaCrystal3 = crystals.crystal(phi + (5*3));
     Crystal etaCrystal4 = crystals.crystal(phi + (5*4));
-    ap_uint<16> e01 = etaCrystal0.energy + etaCrystal1.energy;
-    ap_uint<16> e23 = etaCrystal2.energy + etaCrystal3.energy;
-    ap_uint<16> e4 = etaCrystal4.energy;
-    ap_uint<16> e0123 = e01 + e23;
-    phi_strip[phi] = e0123 + e4;
+    phi_strip[phi] = getSum(etaCrystal0.energy, etaCrystal1.energy, etaCrystal2.energy, etaCrystal3.energy, etaCrystal4.energy);
   }
+}
+
+void makeTower(CrystalGroup crystals, Tower &tower) {
+#pragma HLS ARRAY_PARTITION variable=crystals
+#pragma HLS PIPELINE II=6
+
+  // Compute strips
+  ap_uint<12> eta_strip[5];
+#pragma HLS ARRAY_PARTITION variable=eta_strip
+  makeEtaStrip(crystals, eta_strip);
+
+  ap_uint<12> phi_strip[5];
+#pragma HLS ARRAY_PARTITION variable=phi_strip
+  makePhiStrip(crystals, phi_strip);
 
   // Compute tower energy
-  ap_uint<16> e01 = eta_strip[0] + eta_strip[1];
-  ap_uint<16> e23 = eta_strip[2] + eta_strip[3];
-  ap_uint<16> e4 = eta_strip[4];
-  ap_uint<16> e0123 = e01 + e23;
-  ap_uint<16> tet = e0123 + e4;
+  ap_uint<16> tet = getSum(eta_strip[0], eta_strip[1], eta_strip[2], eta_strip[3], eta_strip[4]);
 
   // Compute peak locations
   ap_uint<3> peakEta = getPeakBinOf5(eta_strip, tet);
