@@ -1,4 +1,3 @@
-
 #include "algo_top_parameters.h"
 #include "algo_top.h"
 #include <algorithm>
@@ -39,7 +38,7 @@ void processInputData(hls::stream<axiword> &link, CrystalGroup &crystalGroup) {
 void stitchInEta1(Tower towerLevelECALSummary[N_INPUT_LINKS], Tower etaStitchedE[N_INPUT_LINKS]) {
 #pragma HLS ARRAY_PARTITION variable=towerLevelECALSummary
 #pragma HLS ARRAY_PARTITION variable=etaStitched
-#pragma HLS PIPELINE
+#pragma HLS PIPELINE II=6
   stitchNeighbors(towerLevelECALSummary[0], towerLevelECALSummary[1], etaStitchedE[0], etaStitchedE[1]);
   stitchNeighbors(towerLevelECALSummary[2], towerLevelECALSummary[3], etaStitchedE[2], etaStitchedE[3]);
   stitchNeighbors(towerLevelECALSummary[4], towerLevelECALSummary[5], etaStitchedE[4], etaStitchedE[5]);
@@ -62,7 +61,7 @@ void stitchInEta1(Tower towerLevelECALSummary[N_INPUT_LINKS], Tower etaStitchedE
 void stitchInEta2(Tower etaStitchedE[N_INPUT_LINKS], Tower etaStitched[N_INPUT_LINKS]) {
 #pragma HLS ARRAY_PARTITION variable=etaStitchedE
 #pragma HLS ARRAY_PARTITION variable=etaStitched
-#pragma HLS PIPELINE
+#pragma HLS PIPELINE II=6
   etaStitched[0] = etaStitchedE[0];
   stitchNeighbors(etaStitchedE[1], etaStitchedE[2], etaStitched[1], etaStitched[2]);
   stitchNeighbors(etaStitchedE[3], etaStitchedE[4], etaStitched[3], etaStitched[4]);
@@ -86,7 +85,7 @@ void stitchInEta2(Tower etaStitchedE[N_INPUT_LINKS], Tower etaStitched[N_INPUT_L
 void stitchInPhi(Tower etaStitched[N_INPUT_LINKS], Tower stitchedTowerLevelECALSummary[N_INPUT_LINKS]) {
 #pragma HLS ARRAY_PARTITION variable=etaStitched
 #pragma HLS ARRAY_PARTITION variable=stitchedTowerLevelECALSummary
-#pragma HLS PIPELINE
+#pragma HLS PIPELINE II=6
   stitchNeighbors(etaStitched[0], etaStitched[17], stitchedTowerLevelECALSummary[0], stitchedTowerLevelECALSummary[17]);
   stitchNeighbors(etaStitched[1], etaStitched[18], stitchedTowerLevelECALSummary[1], stitchedTowerLevelECALSummary[18]);
   stitchNeighbors(etaStitched[2], etaStitched[19], stitchedTowerLevelECALSummary[2], stitchedTowerLevelECALSummary[19]);

@@ -1,10 +1,9 @@
-
 #include "algo_top_parameters.h"
 #include "TowerMaker.h"
 
 ap_uint<3> getPeakBinOf5(ap_uint<12> et[5], ap_uint<16> etSum) {
 #pragma HLS ARRAY_PARTITION variable=et
-#pragma HLS PIPELINE
+#pragma HLS PIPELINE II=6
   ap_uint<12> iEtSum12 =
     (et[0] >> 1)                +  // 0.5xet[0]
     (et[1] >> 1) + et[1]        +  // 1.5xet[1]
@@ -29,7 +28,7 @@ ap_uint<3> getPeakBinOf5(ap_uint<12> et[5], ap_uint<16> etSum) {
 
 void makeTower(CrystalGroup crystals, Tower &tower) {
 #pragma HLS ARRAY_PARTITION variable=crystals
-#pragma HLS PIPELINE
+#pragma HLS PIPELINE II=6
 
   // Compute strips
   ap_uint<12> eta_strip[5];
@@ -41,7 +40,14 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
     Crystal phiCrystal2 = crystals.phiPlus(eta+2);
     Crystal phiCrystal3 = crystals.phiPlus(eta+3);
     Crystal phiCrystal4 = crystals.phiPlus(eta+4);
-    eta_strip[eta] = phiCrystal0.energy + phiCrystal1.energy + phiCrystal2.energy + phiCrystal3.energy + phiCrystal4.energy;
+    ap_uint<16> e01 = phiCrystal0.energy + phiCrystal1.energy;
+    ap_uint<16> e23 = phiCrystal2.energy + phiCrystal3.energy;
+    ap_uint<16> e0123 = e01 + e23;
+    eta_strip[eta] = e0123 +  + phiCrystal4.energy;
+    ap_uint<12> e01 = phiCrystal0.energy + phiCrystal1.energy;
+    ap_uint<12> e23 = phiCrystal2.energy + phiCrystal3.energy;
+    ap_uint<12> e0123 = e01 + e23;
+    eta_strip[eta] = e0123 +  + phiCrystal4.energy;
   }
 
   ap_uint<12> phi_strip[5];
@@ -53,14 +59,17 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
     Crystal etaCrystal2 = crystals.etaPlus(phi * 5 + 2);
     Crystal etaCrystal3 = crystals.etaPlus(phi * 5 + 3);
     Crystal etaCrystal4 = crystals.etaPlus(phi * 5 + 4);
-    phi_strip[phi] = etaCrystal0.energy + etaCrystal1.energy + etaCrystal2.energy + etaCrystal3.energy + etaCrystal4.energy;
+    ap_uint<12> e01 = etaCrystal0.energy + etaCrystal1.energy;
+    ap_uint<12> e23 = etaCrystal2.energy + etaCrystal3.energy;
+    ap_uint<12> e0123 = e01 + e23;
+    phi_strip[phi] = e0123 + etaCrystal4.energy;
   }
 
   // Compute tower energy
-  ap_uint<16> tet = 0;
- towerEnergyLoop: for (size_t eta = 0; eta < 5; eta++) {
-    tet += eta_strip[eta];
-  }
+  ap_uint<12> e01 = eta_strip[0] + eta_strip[1];
+  ap_uint<12> e23 = eta_strip[2] + eta_strip[3];
+  ap_uint<12> e0123 = e01 + e23;
+  ap_uint<16> tet = e0124 + eta_strip[eta];
 
   // Compute peak locations
   ap_uint<3> peakEta = getPeakBinOf5(eta_strip, tet);
@@ -107,7 +116,7 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
 
 ap_uint<32> makeECALSummary(Tower towerLevelECALSummary[N_INPUT_LINKS]) {
 #pragma HLS ARRAY_PARTITION variable=towerLevelECALSummary complete dim=0
-#pragma HLS PIPELINE
+#pragma HLS PIPELINE II=6
   ap_uint<32> ecalSummary = 0;
  ecalSummaryLoop: for (size_t i = 0; i < N_INPUT_LINKS; i++) {
     ecalSummary += towerLevelECALSummary[i].tower_et();
@@ -116,7 +125,7 @@ ap_uint<32> makeECALSummary(Tower towerLevelECALSummary[N_INPUT_LINKS]) {
 }
 
 void stitchNeighbors(Tower Ai, Tower Bi, Tower &Ao, Tower &Bo) {
-#pragma HLS PIPELINE
+#pragma HLS PIPELINE II=6
   // Check that the clusters are neigbhors in eta or phi
   ap_uint<12> cluster_et = Ai.cluster_et() + Bi.cluster_et();
   if(Ai.cluster_et() > Bi.cluster_et()){
