@@ -42,8 +42,9 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
     Crystal phiCrystal4 = crystals.crystal(eta*5+4);
     ap_uint<16> e01 = phiCrystal0.energy + phiCrystal1.energy;
     ap_uint<16> e23 = phiCrystal2.energy + phiCrystal3.energy;
+    ap_uint<16> e4 = phiCrystal4.energy;
     ap_uint<16> e0123 = e01 + e23;
-    eta_strip[eta] = e0123 +  + phiCrystal4.energy;
+    eta_strip[eta] = e0123 + e4;
   }
 
   ap_uint<12> phi_strip[5];
@@ -55,17 +56,19 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
     Crystal etaCrystal2 = crystals.crystal(phi + (5*2));
     Crystal etaCrystal3 = crystals.crystal(phi + (5*3));
     Crystal etaCrystal4 = crystals.crystal(phi + (5*4));
-    ap_uint<12> e01 = etaCrystal0.energy + etaCrystal1.energy;
-    ap_uint<12> e23 = etaCrystal2.energy + etaCrystal3.energy;
-    ap_uint<12> e0123 = e01 + e23;
-    phi_strip[phi] = e0123 + etaCrystal4.energy;
+    ap_uint<16> e01 = etaCrystal0.energy + etaCrystal1.energy;
+    ap_uint<16> e23 = etaCrystal2.energy + etaCrystal3.energy;
+    ap_uint<16> e4 = etaCrystal4.energy;
+    ap_uint<16> e0123 = e01 + e23;
+    phi_strip[phi] = e0123 + e4;
   }
 
   // Compute tower energy
-  ap_uint<12> e01 = eta_strip[0] + eta_strip[1];
-  ap_uint<12> e23 = eta_strip[2] + eta_strip[3];
-  ap_uint<12> e0123 = e01 + e23;
-  ap_uint<16> tet = e0124 + eta_strip[eta];
+  ap_uint<16> e01 = eta_strip[0] + eta_strip[1];
+  ap_uint<16> e23 = eta_strip[2] + eta_strip[3];
+  ap_uint<16> e4 = eta_strip[4];
+  ap_uint<16> e0123 = e01 + e23;
+  ap_uint<16> tet = e0123 + e4;
 
   // Compute peak locations
   ap_uint<3> peakEta = getPeakBinOf5(eta_strip, tet);
