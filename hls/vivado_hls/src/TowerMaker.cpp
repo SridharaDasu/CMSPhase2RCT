@@ -51,8 +51,8 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
     Crystal etaCrystal0 = crystals.crystal(phi + (5*0));
     Crystal etaCrystal1 = crystals.crystal(phi + (5*1));
     Crystal etaCrystal2 = crystals.crystal(phi + (5*2));
-    Crystal etaCrystal3 = crystals.crystal(phi * (5*3));
-    Crystal etaCrystal4 = crystals.crystal(phi * (5*4));
+    Crystal etaCrystal3 = crystals.crystal(phi + (5*3));
+    Crystal etaCrystal4 = crystals.crystal(phi + (5*4));
     phi_strip[phi] = etaCrystal0.energy + etaCrystal1.energy + etaCrystal2.energy + etaCrystal3.energy + etaCrystal4.energy;
   }
 
