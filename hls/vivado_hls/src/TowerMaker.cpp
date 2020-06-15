@@ -36,11 +36,11 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
 #pragma HLS ARRAY_PARTITION variable=eta_strip
  etaStripLoop: for (size_t eta = 0; eta < 5; eta++) {
 #pragma HLS UNROLL
-    Crystal phiCrystal0 = crystals.crystal(eta);
-    Crystal phiCrystal1 = crystals.phiPlus(eta+1);
-    Crystal phiCrystal2 = crystals.phiPlus(eta+2);
-    Crystal phiCrystal3 = crystals.phiPlus(eta+3);
-    Crystal phiCrystal4 = crystals.phiPlus(eta+4);
+    Crystal phiCrystal0 = crystals.crystal(eta*5);
+    Crystal phiCrystal1 = crystals.crystal(eta*5+1);
+    Crystal phiCrystal2 = crystals.crystal(eta*5+2);
+    Crystal phiCrystal3 = crystals.crystal(eta*5+3);
+    Crystal phiCrystal4 = crystals.crystal(eta*5+4);
     eta_strip[eta] = phiCrystal0.energy + phiCrystal1.energy + phiCrystal2.energy + phiCrystal3.energy + phiCrystal4.energy;
   }
 
@@ -48,11 +48,11 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
 #pragma HLS ARRAY_PARTITION variable=phi_strip
  phiStripLoop: for (size_t phi = 0; phi < 5; phi++) {
 #pragma HLS UNROLL
-    Crystal etaCrystal0 = crystals.crystal(phi * 5);
-    Crystal etaCrystal1 = crystals.etaPlus(phi * 5 + 1);
-    Crystal etaCrystal2 = crystals.etaPlus(phi * 5 + 2);
-    Crystal etaCrystal3 = crystals.etaPlus(phi * 5 + 3);
-    Crystal etaCrystal4 = crystals.etaPlus(phi * 5 + 4);
+    Crystal etaCrystal0 = crystals.crystal(phi + (5*0));
+    Crystal etaCrystal1 = crystals.crystal(phi + (5*1));
+    Crystal etaCrystal2 = crystals.crystal(phi + (5*2));
+    Crystal etaCrystal3 = crystals.crystal(phi * (5*3));
+    Crystal etaCrystal4 = crystals.crystal(phi * (5*4));
     phi_strip[phi] = etaCrystal0.energy + etaCrystal1.energy + etaCrystal2.energy + etaCrystal3.energy + etaCrystal4.energy;
   }
 
@@ -93,7 +93,7 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
     peggedTEt = tet;
   }
   ap_uint<3> peakTime;
-  ap_uint<4> peakCrystal = peakEta + peakPhi * 5;
+  ap_uint<5> peakCrystal = peakEta + peakPhi * 5;
   if (peakCrystal < 25) {
     peakTime = crystals.crystal(peakCrystal).time;
   }
