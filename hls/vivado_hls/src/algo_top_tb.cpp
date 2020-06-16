@@ -62,8 +62,8 @@ int main(int argc, char **argv) {
 
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
-	hls::stream<axiword> link_in[N_INPUT_LINKS];
-	hls::stream<axiword> link_out[N_OUTPUT_LINKS];
+	hls::stream<axiword384> link_in[N_INPUT_LINKS];
+	hls::stream<axiword384> link_out[N_OUTPUT_LINKS];
 	size_t loop_count = 1;
 
 	if (arguments.readfile) {
@@ -72,13 +72,21 @@ int main(int argc, char **argv) {
 		datafile_in.read(arguments.readfile);
 
 		// Copy the file data to the stream
-		for (size_t i = 0; i < datafile_in.getCycles(); i++) {
-			for (size_t k = 0; k < N_INPUT_LINKS; k++) {
-				APxLinkData::LinkValue v;
-				if (datafile_in.get(i, k, v)) {
-					link_in[k].write({v.data, v.user, 0});
-				}
-			}
+		ap_uint<384> bigdataword[N_INPUT_LINKS];
+		for (size_t i = 0, low = 0, high = 63; i < datafile_in.getCycles(); i++, low += 64, high += 64) {
+		  for (size_t k = 0; k < N_INPUT_LINKS; k++) {
+		    APxLinkData::LinkValue v;
+		    if (datafile_in.get(i, k, v)) {
+		      bigdataword[k].range(high, low) = v.data;
+		    }
+		  }
+		  if (high == 383) {
+		    for (size_t k = 0; k < N_INPUT_LINKS; k++) {		    
+		      link_in[k].write({bigdataword[k], 0, 1});
+		    }
+		    low = 0;
+		    high = 63;
+		  }
 		}
 
 		if (arguments.verbose) {
@@ -92,19 +100,33 @@ int main(int argc, char **argv) {
 	}
 
 	// Run the algorithm
+
 	for (size_t i = 0; i < loop_count; i++) {
-		algo_top(link_in, link_out);
+	  algo_top(link_in, link_out);
 	}
 
 	APxLinkData datafile_out(N_OUTPUT_LINKS);
-
-	for (size_t i = 0; i < N_OUTPUT_WORDS_PER_FRAME * loop_count; i++) {
-		for (size_t k = 0; k < N_OUTPUT_LINKS; k++) {
-			if (!link_out[k].empty()) {
-				axiword r = link_out[k].read();
-				datafile_out.add(i, k, {r.user, r.data});
-			}
-		}
+	ap_uint<384> bigdataword[N_OUTPUT_LINKS];
+	axiword384 r384;
+	for (size_t i = 0, low = 0, high = 63; i < loop_count * N_OUTPUT_WORDS_PER_FRAME; i++, low += 64, high += 64) {
+	  for (size_t k = 0; k < N_OUTPUT_LINKS; k++) {
+	    if ((i % N_OUTPUT_WORDS_PER_FRAME) == 0) {
+	      if (!link_out[k].empty()) {
+		r384 = link_out[k].read();
+		bigdataword[k] = r384.data;
+	      }
+	    }
+	    axiword64 r;
+	    r.user = r384.user;
+	    if (high == 383) {
+	      r.last = 1;
+	    }
+	    else {
+	      r.last = 0;
+	    }
+	    r.data = bigdataword[k].range(high, low);
+	    datafile_out.add(i, k, {r.user, r.data});
+	  }
 	}
 
 	if (arguments.verbose) {
