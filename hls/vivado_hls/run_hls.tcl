@@ -66,8 +66,8 @@ if {$opt(cosim)} {
   set args "-r $opt(tv_in) -v"
   if {[string compare $opt(tv_out) ""]} {set args [append args " -w $opt(tv_out)"]}
   if {[string compare $opt(tv_ref) ""]} {set args [append args " -c $opt(tv_ref)"]}
-  puts "Executing: cosim_design \"-argv -r $opt(args) -v\" -trace_level all"
-  cosim_design -argv "-r $opt(args) -v" -trace_level all
+  puts "Executing: cosim_design -argv \"$args\" -trace_level all"
+  cosim_design -argv "$args" -trace_level all
   set time_end [clock clicks -milliseconds]
   report_time "C/RTL SIMULATION" $time_start $time_end
 }
