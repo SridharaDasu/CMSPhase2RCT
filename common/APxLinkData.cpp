@@ -118,7 +118,7 @@ void APxLinkData::print() const {
 
 bool APxLinkData::operator ==(const APxLinkData &b) const {
 	for (size_t i = 0; i < this->max_cycles; i++) {
-		for (size_t k = 0; i < this->links; k++) {
+		for (size_t k = 0; k < this->links; k++) {
 			LinkValue v1, v2;
 
 			bool r1 = this->get(i, k, v1);
