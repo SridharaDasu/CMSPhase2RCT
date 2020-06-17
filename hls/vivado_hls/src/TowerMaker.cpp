@@ -1,18 +1,18 @@
 #include "algo_top_parameters.h"
 #include "TowerMaker.h"
 
-ap_uint<3> getPeakBinOf5(ap_uint<12> et[5], ap_uint<16> etSum) {
+ap_uint<3> getPeakBinOf5(ap_uint<13> et[5], ap_uint<16> etSum) {
 #pragma HLS ARRAY_PARTITION variable=et
 #pragma HLS PIPELINE II=6
-  ap_uint<12> iEtSum12 =
+  ap_uint<16> iEtSum12 =
     (et[0] >> 1)                +  // 0.5xet[0]
     (et[1] >> 1) + et[1]        +  // 1.5xet[1]
     (et[2] >> 1) + (et[2] << 1) +  // 2.5xet[2]
     (et[3] << 2) - (et[3] >> 1) +  // 3.5xet[3]
     (et[4] << 2) + (et[4] >> 1) ;  // 4.5xet[4]
-  ap_uint<10> iEtSum = 0;
-  if(iEtSum12 > 0x3FF) {
-    iEtSum = 0x3FF;
+  ap_uint<16> iEtSum = 0;
+  if(iEtSum12 > 0xFFFF) {
+    iEtSum = 0xFFFF;
   }
   else {
     iEtSum = iEtSum12;
