@@ -35,7 +35,7 @@ ap_uint<16> getSum(ap_uint<16> e0, ap_uint<16> e1, ap_uint<16> e2, ap_uint<16> e
   return e;
 }
 
-void makeEtaStrip(CrystalGroup crystals, ap_uint<12> eta_strip[5]) {
+void makeEtaStrip(CrystalGroup crystals, ap_uint<13> eta_strip[5]) {
 #pragma HLS PIPELINE II=6
 #pragma HLS ARRAY_PARTITION variable=crystals
 #pragma HLS ARRAY_PARTITION variable=eta_strip
@@ -51,7 +51,7 @@ void makeEtaStrip(CrystalGroup crystals, ap_uint<12> eta_strip[5]) {
 }
 
 
-void makePhiStrip(CrystalGroup crystals, ap_uint<12> phi_strip[5]) {
+void makePhiStrip(CrystalGroup crystals, ap_uint<13> phi_strip[5]) {
 #pragma HLS PIPELINE II=6
 #pragma HLS ARRAY_PARTITION variable=crystals
 #pragma HLS ARRAY_PARTITION variable=phi_strip
@@ -71,11 +71,11 @@ void makeTower(CrystalGroup crystals, Tower &tower) {
 #pragma HLS PIPELINE II=6
 
   // Compute strips
-  ap_uint<12> eta_strip[5];
+  ap_uint<13> eta_strip[5];
 #pragma HLS ARRAY_PARTITION variable=eta_strip
   makeEtaStrip(crystals, eta_strip);
 
-  ap_uint<12> phi_strip[5];
+  ap_uint<13> phi_strip[5];
 #pragma HLS ARRAY_PARTITION variable=phi_strip
   makePhiStrip(crystals, phi_strip);
 
