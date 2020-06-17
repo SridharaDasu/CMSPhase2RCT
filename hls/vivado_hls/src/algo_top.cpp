@@ -47,15 +47,17 @@ void stitchInEta1(Tower towerLevelECALSummary[N_INPUT_LINKS], Tower etaStitchedE
   stitchNeighbors(towerLevelECALSummary[10], towerLevelECALSummary[11], etaStitchedE[10], etaStitchedE[11]);
   stitchNeighbors(towerLevelECALSummary[12], towerLevelECALSummary[13], etaStitchedE[12], etaStitchedE[13]);
   stitchNeighbors(towerLevelECALSummary[14], towerLevelECALSummary[15], etaStitchedE[14], etaStitchedE[15]);
-  stitchNeighbors(towerLevelECALSummary[16], towerLevelECALSummary[17], etaStitchedE[16], etaStitchedE[17]);
-  stitchNeighbors(towerLevelECALSummary[18], towerLevelECALSummary[19], etaStitchedE[18], etaStitchedE[19]);
-  stitchNeighbors(towerLevelECALSummary[20], towerLevelECALSummary[21], etaStitchedE[20], etaStitchedE[21]);
-  stitchNeighbors(towerLevelECALSummary[22], towerLevelECALSummary[23], etaStitchedE[22], etaStitchedE[23]);
-  stitchNeighbors(towerLevelECALSummary[24], towerLevelECALSummary[25], etaStitchedE[24], etaStitchedE[25]);
-  stitchNeighbors(towerLevelECALSummary[26], towerLevelECALSummary[27], etaStitchedE[26], etaStitchedE[27]);
-  stitchNeighbors(towerLevelECALSummary[28], towerLevelECALSummary[29], etaStitchedE[28], etaStitchedE[29]);
-  stitchNeighbors(towerLevelECALSummary[30], towerLevelECALSummary[31], etaStitchedE[30], etaStitchedE[31]);
-  stitchNeighbors(towerLevelECALSummary[32], towerLevelECALSummary[33], etaStitchedE[32], etaStitchedE[33]);
+  etaStitchedE[16] = towerLevelECALSummary[16];
+  
+  stitchNeighbors(towerLevelECALSummary[17], towerLevelECALSummary[18], etaStitchedE[17], etaStitchedE[18]);
+  stitchNeighbors(towerLevelECALSummary[19], towerLevelECALSummary[20], etaStitchedE[19], etaStitchedE[20]);
+  stitchNeighbors(towerLevelECALSummary[21], towerLevelECALSummary[22], etaStitchedE[21], etaStitchedE[22]);
+  stitchNeighbors(towerLevelECALSummary[23], towerLevelECALSummary[24], etaStitchedE[23], etaStitchedE[24]);
+  stitchNeighbors(towerLevelECALSummary[25], towerLevelECALSummary[26], etaStitchedE[25], etaStitchedE[26]);
+  stitchNeighbors(towerLevelECALSummary[27], towerLevelECALSummary[28], etaStitchedE[27], etaStitchedE[28]);
+  stitchNeighbors(towerLevelECALSummary[29], towerLevelECALSummary[30], etaStitchedE[29], etaStitchedE[30]);
+  stitchNeighbors(towerLevelECALSummary[31], towerLevelECALSummary[32], etaStitchedE[31], etaStitchedE[32]);
+  etaStitchedE[33] = towerLevelECALSummary[33];
 }
 
 void stitchInEta2(Tower etaStitchedE[N_INPUT_LINKS], Tower etaStitched[N_INPUT_LINKS]) {
@@ -71,15 +73,16 @@ void stitchInEta2(Tower etaStitchedE[N_INPUT_LINKS], Tower etaStitched[N_INPUT_L
   stitchNeighbors(etaStitchedE[11], etaStitchedE[12], etaStitched[11], etaStitched[12]);
   stitchNeighbors(etaStitchedE[13], etaStitchedE[14], etaStitched[13], etaStitched[14]);
   stitchNeighbors(etaStitchedE[15], etaStitchedE[16], etaStitched[15], etaStitched[16]);
-  stitchNeighbors(etaStitchedE[17], etaStitchedE[18], etaStitched[17], etaStitched[18]);
-  stitchNeighbors(etaStitchedE[19], etaStitchedE[20], etaStitched[19], etaStitched[20]);
-  stitchNeighbors(etaStitchedE[21], etaStitchedE[22], etaStitched[21], etaStitched[22]);
-  stitchNeighbors(etaStitchedE[23], etaStitchedE[24], etaStitched[23], etaStitched[24]);
-  stitchNeighbors(etaStitchedE[25], etaStitchedE[26], etaStitched[25], etaStitched[26]);
-  stitchNeighbors(etaStitchedE[27], etaStitchedE[28], etaStitched[27], etaStitched[28]);
-  stitchNeighbors(etaStitchedE[29], etaStitchedE[30], etaStitched[29], etaStitched[30]);
-  stitchNeighbors(etaStitchedE[31], etaStitchedE[32], etaStitched[31], etaStitched[32]);
-  etaStitched[33] = etaStitchedE[33];
+
+  etaStitched[17] = etaStitchedE[17];
+  stitchNeighbors(etaStitchedE[18], etaStitchedE[19], etaStitched[18], etaStitched[19]);
+  stitchNeighbors(etaStitchedE[20], etaStitchedE[21], etaStitched[20], etaStitched[21]);
+  stitchNeighbors(etaStitchedE[22], etaStitchedE[23], etaStitched[22], etaStitched[23]);
+  stitchNeighbors(etaStitchedE[24], etaStitchedE[25], etaStitched[24], etaStitched[25]);
+  stitchNeighbors(etaStitchedE[26], etaStitchedE[27], etaStitched[26], etaStitched[27]);
+  stitchNeighbors(etaStitchedE[28], etaStitchedE[29], etaStitched[28], etaStitched[29]);
+  stitchNeighbors(etaStitchedE[30], etaStitchedE[31], etaStitched[30], etaStitched[31]);
+  stitchNeighbors(etaStitchedE[32], etaStitchedE[33], etaStitched[32], etaStitched[33]);
 }
 
 void stitchInPhi(Tower etaStitched[N_INPUT_LINKS], Tower stitchedTowerLevelECALSummary[N_INPUT_LINKS]) {
