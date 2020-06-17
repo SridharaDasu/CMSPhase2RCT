@@ -22,8 +22,8 @@ namespace algo {
 	typedef ap_axiu<256, 8, 0, 0> axiword256;
 	typedef ap_axiu<320, 8, 0, 0> axiword320;
 	typedef ap_axiu<384, 8, 0, 0> axiword384;
-	typedef ap_axiu<576, 8, 0, 0> axiword448;
-	typedef ap_axiu<576, 8, 0, 0> axiword512;
+	typedef ap_axiu<448, 8, 0, 0> axiword448;
+	typedef ap_axiu<512, 8, 0, 0> axiword512;
 	typedef ap_axiu<576, 8, 0, 0> axiword576;
 }
 
