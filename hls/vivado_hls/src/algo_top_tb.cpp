@@ -80,6 +80,7 @@ int main(int argc, char **argv) {
 		      bigdataword[k].range(high, low) = v.data;
 		    }
 		  }
+
 		  if (high == 383) {
 		    for (size_t k = 0; k < N_INPUT_LINKS; k++) {		    
 		      link_in[k].write({bigdataword[k], 0, 1});
