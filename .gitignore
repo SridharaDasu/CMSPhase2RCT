@@ -1,2 +1,5 @@
 proj/
 *.log
+algo_top_wrapper.vhd
+tvgen
+tvgen.o
