@@ -1,6 +1,13 @@
 #include "../common/APxLinkData.hh"
 #include <ap_int.h>
 #include <bitset>
+#include <vector>
+#include <string>
+#include <TFile.h>
+#include <TTreeReader.h>
+#include <TTreeReaderValue.h>
+#include <TTreeReaderArray.h>
+#include <TH2.h>
 
 using namespace std;
 
@@ -118,45 +125,61 @@ struct Tower {
 #define ETA 17
 #define PHI 2
 
-int main(int argn, char *argp[]) {
+void write_tv(Tower towers[ETA][PHI],const char* fname="test_in.txt") {
+  ap_uint<64> packed[ETA][PHI][6];
+  int nlink=0;
+  for (size_t k = 0; k < PHI; k++) {
+    for (size_t i = 0; i < ETA; i++) {
+      std::cout<<"++++ LINK # "<<nlink<<"                           ------- ["<<i<<"]["<<k<<"] -------"<<endl;
+      towers[i][k].pack(packed[i][k]);
+      std::cout<<endl;
+      nlink++;
+    }
+  }
 
+
+  APxLinkData link_in(ETA*PHI);
+
+  for (size_t i = 0; i < 6; i++) {
+    for (size_t k = 0; k < ETA*PHI; k++) {
+      size_t phi = k / ETA;
+      size_t eta = k % ETA;
+      link_in.add(i, k, {0x00, packed[eta][phi][i]});
+    }
+  }
+  link_in.write(fname);
+}
+
+void mc_sim(const char* input,const char* output) {
+  TFile* tfile = new TFile(input);
+  TTreeReader reader("analyzer/tree",tfile);
+  TTreeReaderValue<int> nCrystal(reader,"nCrystal");
+  TTreeReaderArray<float> crystal_et(reader,"crystal_Et");
+  TTreeReaderArray<int> crystal_ieta(reader,"crystal_iEta");
+  TTreeReaderArray<int> crystal_iphi(reader,"crystal_iPhi");
+
+  string outname = string(output);
+  outname = outname.substr(0,outname.find(".txt"));
+  for (int ievent = 0; reader.Next(); i++) {
+    string fname = outname + "_" + to_string(ievent) + ".txt";
+    int posEtaSect[17][360];
+    int negEtaSect[17][360];
+
+    for (int icrystal = 0; icrystal < nCrystal; icrystal++) {
+      int et = crystal_et[icrystal];
+      int ieta = crystal_ieta[icrystal];
+      int iphi = crystal_iphi[icrystal];
+
+      if ( ieta < 0 )    negEtaSect[abs(ieta)-1][iphi-1] = et;
+      else if (ieta > 0) posEtaSect[    ieta -1][iphi-1] = et;
+    }
+    
+    
+  }
+}
+
+void test() {
   Tower towers[ETA][PHI];
-
-  //-  int counter = 0;
-  //-for(size_t ieta=0; ieta<5; ieta++){
-  //-   for(size_t iphi=0; iphi<5; iphi++){
-  //-      counter++;
-  //-      towers[0][0].crystals[ieta][iphi].energy=counter;
-  //-      cout<<"crystals["<<ieta<<"]["<<iphi<<"] : "<<towers[0][0].crystals[ieta][iphi].energy<<std::endl;
-  //-   }
-  //-}
-  //-      cout<<"----------"<<std::endl;
-
-  //-| //set - 1 
-  //-| towers[0][0].crystals[2][3].energy = 11;
-  //-| towers[0][0].crystals[2][4].energy = 22;
-  //-| towers[0][1].crystals[2][0].energy = 50;
-  //-| towers[1][0].crystals[0][3].energy = 44;
-  //-| towers[1][1].crystals[3][1].energy = 55;
-  //-| towers[2][0].crystals[4][4].energy = 66;
-  //-| towers[2][1].crystals[3][3].energy = 77;
-  //-| towers[2][1].crystals[3][4].energy = 88;
-  //-| towers[3][0].crystals[2][1].energy = 99;
-  //-| towers[4][1].crystals[3][1].energy = 95;
-  //-| towers[5][0].crystals[3][3].energy = 8;
-  //-| towers[6][1].crystals[4][0].energy = 25;
-  //-| towers[6][0].crystals[4][3].energy = 10;
-  //-| towers[6][0].crystals[4][4].energy = 36;
-  //-| towers[7][0].crystals[0][4].energy = 14;
-  //-| towers[7][1].crystals[4][3].energy = 70;
-  //-| towers[8][0].crystals[3][1].energy = 35;
-  //-| towers[8][1].crystals[2][3].energy = 26;
-  //-| towers[9][0].crystals[3][1].energy = 43;
-  //-| towers[9][0].crystals[2][2].energy = 204;
-  //-| towers[9][1].crystals[0][3].energy = 30;
-  //-| towers[12][0].crystals[1][1].energy = 170;
-  //-| towers[14][1].crystals[4][2].energy = 123;
-
   // set - 2
   towers[0][0].crystals[1][1].energy = 3;
   towers[0][0].crystals[1][3].energy = 7;
@@ -188,30 +211,14 @@ int main(int argn, char *argp[]) {
   towers[15][0].crystals[4][1].energy = 32;
   towers[16][0].crystals[0][1].energy = 21;
   towers[16][1].crystals[3][4].energy = 12;
+  write_tv(towers);
+}
 
-  ap_uint<64> packed[ETA][PHI][6];
-  int nlink=0;
-  for (size_t k = 0; k < PHI; k++) {
-    for (size_t i = 0; i < ETA; i++) {
-      std::cout<<"++++ LINK # "<<nlink<<"                           ------- ["<<i<<"]["<<k<<"] -------"<<endl;
-      towers[i][k].pack(packed[i][k]);
-      std::cout<<endl;
-      nlink++;
-    }
+int main(int argn, char *argp[]) {
+  if (argn == 1) test();
+  else if (argn == 3) {
+    mc_sim(argp[1],argp[2]);
   }
-
-
-  APxLinkData link_in(ETA*PHI);
-
-  for (size_t i = 0; i < 6; i++) {
-    for (size_t k = 0; k < ETA*PHI; k++) {
-      size_t phi = k / ETA;
-      size_t eta = k % ETA;
-      link_in.add(i, k, {0x00, packed[eta][phi][i]});
-    }
-  }
-
-  link_in.write("test_in.txt");
 
   return 0;
 }
