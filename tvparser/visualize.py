@@ -8,7 +8,7 @@ gROOT.SetBatch(1)
 gStyle.SetOptStat(0)
 
 def DrawTV(tv):
-    hsname = "vis_%s"%(tv.fname.replace(".txt","").replace("../",""))
+    hsname = "vis_%s"%(tv.fname.replace(".txt","").replace("../","").replace("/","_"))
     neta = parse.T_ETA*parse.C_ETA
     nphi = parse.T_PHI*parse.C_PHI
     rct = TH2I(hsname,"%s;eta;phi"%hsname,nphi,0,nphi,neta,0,neta)
@@ -23,15 +23,14 @@ def DrawTV(tv):
         
 
     for tower in tv.towers:
-        teta = tower.eta
-        tphi = tower.phi
+        teta = tower.eta * parse.C_ETA
+        tphi = tower.phi * parse.C_PHI
 
         for crystal in tower.crystals:
             if crystal.energy == 0: continue
-            eta = parse.C_ETA*teta + crystal.eta
-            phi = parse.C_PHI*tphi + crystal.phi
+            eta = teta + crystal.eta
+            phi = tphi + crystal.phi
             rct.Fill(phi,eta,crystal.energy)
-
     c = TCanvas(hsname,hsname,800,800)
     c.SetGrid()
     rct.Draw("COLZ TEXT")

@@ -34,13 +34,13 @@ class Tower:
         for i in range(ncrystals):
             lo = nbits - 14*i
             hi = nbits - 14*(i+1)
-            phi = i/5
-            eta = i%5
+            phi = i%5
+            eta = i/5
             crystal = Crystal(binary[hi:lo],eta,phi)
             self.crystals.append(crystal)
     def unwrap(self): return self.crystals
     def __str__(self):
-        return "Tower: ({eta},{phi})\n".format(**vars(self)) + "\n".join( "\tCrystal: %s"%crystal for crystal in self.crystals)
+        return "Tower: ({eta},{phi})\n".format(**vars(self)) + "\n".join( "\tCrystal: %s"%crystal for crystal in self.crystals if crystal.energy > 0) + '\n'
     def link(self):
         words = []
         binary = ""
@@ -73,6 +73,8 @@ class InputTV:
             phi = (i/T_ETA)
             eta = (i%T_ETA)
             tower.process(eta,phi)
+    def __str__(self):
+        return '**************\n'.join([str(tower) for tower in self.towers])
     def unwrap(self):
         unwrapped = []
         for tower in self.towers: unwrapped += tower.unwrap()
