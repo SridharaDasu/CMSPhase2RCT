@@ -153,13 +153,20 @@ void write_tv(Tower towers[ETA][PHI],const char* fname="test_in.txt",bool verbos
   link_in.write(fname);
 }
 
-void process_card(int rct[CETA][CPHI],const char* output) {
+void process_card(float rct[CETA][CPHI],const char* output) {
   Tower towers[ETA][PHI];
+  float max_crystal = 0;
+  for (int ieta = 0; ieta < CETA; ieta++)
+    for (int iphi = 0; iphi < CPHI; iphi++)
+      if (max_crystal < rct[ieta][iphi]) max_crystal = rct[ieta][iphi];
+  int scale = 50/max_crystal;
+  
   for (int ieta = 0; ieta < CETA; ieta++) {
     for (int iphi = 0; iphi < CPHI; iphi++) {
       int ceta = ieta%5; int cphi = iphi%5;
       int teta = ieta/5; int tphi = iphi/5;
-      towers[teta][tphi].crystals[ceta][cphi].energy = rct[ieta][iphi];
+      // printf("(%i,%i,%i,%i,%i,%i): %f\n",teta,tphi,ceta,cphi,ieta,iphi,rct[ieta][iphi]*scale);
+      towers[teta][tphi].crystals[ceta][cphi].energy = rct[ieta][iphi]*scale;
     }
   }
   write_tv(towers,output);
@@ -177,11 +184,11 @@ void mc_sim(const char* input,const char* output) {
   outname = outname.substr(0,outname.find(".txt"));
   for (int ievent = 0; reader.Next(); ievent++) {
     string fname = outname + "_" + to_string(ievent);
-    int posEtaSect[CETA][360];
-    int negEtaSect[CETA][360];
+    float posEtaSect[CETA][360];
+    float negEtaSect[CETA][360];
 
     for (int icrystal = 0; icrystal < *nCrystal; icrystal++) {
-      int et = crystal_et[icrystal];
+      float et = crystal_et[icrystal];
       int ieta = crystal_ieta[icrystal];
       int iphi = crystal_iphi[icrystal];
 
@@ -190,8 +197,8 @@ void mc_sim(const char* input,const char* output) {
     }
     // For pos & neg eta together
     for (int irct = 0; irct < 72; irct++) {
-      int posRCT[CETA][CPHI];
-      int negRCT[CETA][CPHI];
+      float posRCT[CETA][CPHI];
+      float negRCT[CETA][CPHI];
       for (int ieta = 0; ieta < CETA; ieta++) {
 	for (int iphi = 0; iphi < CPHI; iphi++) {
 	  int rphi = irct*CPHI + iphi;

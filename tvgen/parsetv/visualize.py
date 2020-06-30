@@ -11,7 +11,7 @@ def DrawTV(tv):
     hsname = "vis_%s"%(tv.fname.replace(".txt","").replace("../","").replace("/","_"))
     neta = parse.T_ETA*parse.C_ETA
     nphi = parse.T_PHI*parse.C_PHI
-    rct = TH2I(hsname,"%s;eta;phi"%hsname,nphi,0,nphi,neta,0,neta)
+    rct = TH2I(hsname,"%s;iPhi;iEta"%hsname,nphi,0,nphi,neta,0,neta)
 
     for ybin in range(neta):
         if (ybin-2)%5 == 0: rct.GetYaxis().SetBinLabel(ybin+1,str((ybin-2)/5))
