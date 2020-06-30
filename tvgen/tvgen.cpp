@@ -3,11 +3,10 @@
 #include <bitset>
 #include <vector>
 #include <string>
-#include <TFile.h>
-#include <TTreeReader.h>
-#include <TTreeReaderValue.h>
-#include <TTreeReaderArray.h>
-#include <TH2.h>
+#include "TFile.h"
+#include "TTreeReader.h"
+#include "TTreeReaderValue.h"
+#include "TTreeReaderArray.h"
 
 using namespace std;
 
@@ -66,7 +65,7 @@ struct Tower {
 #endif
 
   // Packs a tower object into 6 64-bit words, useful for link formatting
-  void pack(ap_uint<64> out[6]) {
+  void pack(ap_uint<64> out[6],bool verbose=false) {
 
     for (size_t i = 0; i < 6; i++) out[i] = 0;
 
@@ -74,7 +73,7 @@ struct Tower {
     for(size_t i=0; i<5; i++)
       for(size_t j=0; j<5; j++){
 	if(this->crystals[i][j].energy>0)
-	  cout<<"Crys#"<<ncrys<<": ["<<i<<"]["<<j<<"]: "<<this->crystals[i][j].energy<<endl;;
+	  if (verbose) cout<<"Crys#"<<ncrys<<": ["<<i<<"]["<<j<<"]: "<<this->crystals[i][j].energy<<endl;;
 	ncrys++;
       }
 
@@ -116,7 +115,7 @@ struct Tower {
     out[5].range(63, 30) = 0; //EMPTY (34)
 
     for(size_t kk=0; kk< 6;  kk++)
-      cout<<std::setw(20)<<out[kk]<<"   "<<std::bitset<64>(out[kk])<<std::endl;
+      if (verbose) cout<<std::setw(20)<<out[kk]<<"   "<<std::bitset<64>(out[kk])<<std::endl;
   }
 
   Crystal crystals[5][5];
@@ -125,14 +124,18 @@ struct Tower {
 #define ETA 17
 #define PHI 2
 
-void write_tv(Tower towers[ETA][PHI],const char* fname="test_in.txt") {
+#define CETA 85
+#define CPHI 10
+
+void write_tv(Tower towers[ETA][PHI],const char* fname="test_in.txt",bool verbose=false) {
+  std::cout << "Writing " << fname << endl;
   ap_uint<64> packed[ETA][PHI][6];
   int nlink=0;
   for (size_t k = 0; k < PHI; k++) {
     for (size_t i = 0; i < ETA; i++) {
-      std::cout<<"++++ LINK # "<<nlink<<"                           ------- ["<<i<<"]["<<k<<"] -------"<<endl;
+      if (verbose) std::cout<<"++++ LINK # "<<nlink<<"                           ------- ["<<i<<"]["<<k<<"] -------"<<endl;
       towers[i][k].pack(packed[i][k]);
-      std::cout<<endl;
+      if (verbose) std::cout<<endl;
       nlink++;
     }
   }
@@ -150,6 +153,18 @@ void write_tv(Tower towers[ETA][PHI],const char* fname="test_in.txt") {
   link_in.write(fname);
 }
 
+void process_card(int rct[CETA][CPHI],const char* output) {
+  Tower towers[ETA][PHI];
+  for (int ieta = 0; ieta < CETA; ieta++) {
+    for (int iphi = 0; iphi < CPHI; iphi++) {
+      int ceta = ieta%5; int cphi = iphi%5;
+      int teta = ieta/5; int tphi = iphi/5;
+      towers[teta][tphi].crystals[ceta][cphi].energy = rct[ieta][iphi];
+    }
+  }
+  write_tv(towers,output);
+}
+
 void mc_sim(const char* input,const char* output) {
   TFile* tfile = new TFile(input);
   TTreeReader reader("analyzer/tree",tfile);
@@ -160,12 +175,12 @@ void mc_sim(const char* input,const char* output) {
 
   string outname = string(output);
   outname = outname.substr(0,outname.find(".txt"));
-  for (int ievent = 0; reader.Next(); i++) {
-    string fname = outname + "_" + to_string(ievent) + ".txt";
-    int posEtaSect[17][360];
-    int negEtaSect[17][360];
+  for (int ievent = 0; reader.Next(); ievent++) {
+    string fname = outname + "_" + to_string(ievent);
+    int posEtaSect[CETA][360];
+    int negEtaSect[CETA][360];
 
-    for (int icrystal = 0; icrystal < nCrystal; icrystal++) {
+    for (int icrystal = 0; icrystal < *nCrystal; icrystal++) {
       int et = crystal_et[icrystal];
       int ieta = crystal_ieta[icrystal];
       int iphi = crystal_iphi[icrystal];
@@ -173,8 +188,21 @@ void mc_sim(const char* input,const char* output) {
       if ( ieta < 0 )    negEtaSect[abs(ieta)-1][iphi-1] = et;
       else if (ieta > 0) posEtaSect[    ieta -1][iphi-1] = et;
     }
-    
-    
+    // For pos & neg eta together
+    for (int irct = 0; irct < 72; irct++) {
+      int posRCT[CETA][CPHI];
+      int negRCT[CETA][CPHI];
+      for (int ieta = 0; ieta < CETA; ieta++) {
+	for (int iphi = 0; iphi < CPHI; iphi++) {
+	  int rphi = irct*CPHI + iphi;
+	  posRCT[ieta][iphi] = posEtaSect[ieta][rphi];
+	  negRCT[ieta][iphi] = negEtaSect[ieta][rphi];
+	}
+      }
+      process_card(posRCT,(fname+"_pos"+to_string(irct)+".txt").c_str());
+      process_card(negRCT,(fname+"_neg"+to_string(irct)+".txt").c_str());
+    }
+    break;
   }
 }
 
