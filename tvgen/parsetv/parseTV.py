@@ -93,6 +93,7 @@ class InputTV:
 
 parser = ArgumentParser()
 parser.add_argument("-i","--input",type=InputTV,nargs="*")
+parser.add_argument("-o","--output",default="tv_plots.root")
 args = parser.parse_args()
 
 if __name__ == "__main__":

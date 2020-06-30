@@ -160,16 +160,20 @@ void process_card(float rct[CETA][CPHI],const char* output) {
     for (int iphi = 0; iphi < CPHI; iphi++)
       if (max_crystal < rct[ieta][iphi]) max_crystal = rct[ieta][iphi];
   int scale = 50/max_crystal;
-  
+
+  int et_sum = 0;
   for (int ieta = 0; ieta < CETA; ieta++) {
     for (int iphi = 0; iphi < CPHI; iphi++) {
       int ceta = ieta%5; int cphi = iphi%5;
       int teta = ieta/5; int tphi = iphi/5;
       // printf("(%i,%i,%i,%i,%i,%i): %f\n",teta,tphi,ceta,cphi,ieta,iphi,rct[ieta][iphi]*scale);
-      towers[teta][tphi].crystals[ceta][cphi].energy = rct[ieta][iphi]*scale;
+      int et = rct[ieta][iphi]*scale;
+      et_sum += et;
+      towers[teta][tphi].crystals[ceta][cphi].energy = et;
     }
   }
-  write_tv(towers,output);
+  if (et_sum > 0) 
+    write_tv(towers,output);
 }
 
 void mc_sim(const char* input,const char* output) {
