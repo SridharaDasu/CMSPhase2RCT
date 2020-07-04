@@ -38,6 +38,7 @@ vivado_hls -f run_hls.tcl csim=1 synth=1 cosim=1 export=1 tv_in=$PWD/data/test_i
 
 Making the bit file for APd (takes hours):
 ```
+git clone --recursive ssh://git@gitlab.cern.ch:7999/asvetek/phase2-rct.git -b 384b
 cd $AP_FW_BASE_DIR/phase2-rct/
 mkdir build
 make
