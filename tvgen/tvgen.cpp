@@ -10,6 +10,17 @@
 
 using namespace std;
 
+
+#define ETA 17 // Number of Towers in iEta for RCT
+#define PHI 2  // Number of Towers in iPhi for RCT
+
+#define CETA 85 // Number of Crystals in iEta for RCT (ETA*5)
+#define CPHI 10 // Number of Crystals in iPhi for RCT (PHI*5)
+
+#define MAX_ET 100  // Maximum Et Crystal cut in RCT for writing MC Sim TV
+#define SUM_ET 100 // Sum Et cut in RCT for writing MC Sim TV
+#define NEVENTS -1 // Number of Events to run over for MC Sim TV
+
 /* ECAL crystal object definition */
 struct Crystal {
   Crystal() : energy(0), timing(0), spike(false) {};
@@ -121,12 +132,6 @@ struct Tower {
   Crystal crystals[5][5];
 };
 
-#define ETA 17
-#define PHI 2
-
-#define CETA 85
-#define CPHI 10
-
 void write_tv(Tower towers[ETA][PHI],const char* fname="test_in.txt",bool verbose=false) {
   std::cout << "Writing " << fname << endl;
   ap_uint<64> packed[ETA][PHI][6];
@@ -155,24 +160,26 @@ void write_tv(Tower towers[ETA][PHI],const char* fname="test_in.txt",bool verbos
 
 void process_card(float rct[CETA][CPHI],const char* output) {
   Tower towers[ETA][PHI];
-  float max_crystal = 0;
-  for (int ieta = 0; ieta < CETA; ieta++)
-    for (int iphi = 0; iphi < CPHI; iphi++)
-      if (max_crystal < rct[ieta][iphi]) max_crystal = rct[ieta][iphi];
-  int scale = 50/max_crystal;
+  // float max_crystal = 0;
+  // for (int ieta = 0; ieta < CETA; ieta++)
+  //   for (int iphi = 0; iphi < CPHI; iphi++)
+  //     if (max_crystal < rct[ieta][iphi]) max_crystal = rct[ieta][iphi];
+  // int scale = 50/max_crystal;
 
-  int et_sum = 0;
+  float max_et = 0;
+  float et_sum = 0;
   for (int ieta = 0; ieta < CETA; ieta++) {
     for (int iphi = 0; iphi < CPHI; iphi++) {
       int ceta = ieta%5; int cphi = iphi%5;
       int teta = ieta/5; int tphi = iphi/5;
-      // printf("(%i,%i,%i,%i,%i,%i): %f\n",teta,tphi,ceta,cphi,ieta,iphi,rct[ieta][iphi]*scale);
-      int et = rct[ieta][iphi]*scale;
+      float et = rct[ieta][iphi];
+      // printf("(%i,%i,%i,%i,%i,%i): %f\n",teta,tphi,ceta,cphi,ieta,iphi,et);
+      if ( et  > max_et ) max_et = et;
       et_sum += et;
       towers[teta][tphi].crystals[ceta][cphi].energy = et;
     }
   }
-  if (et_sum > 0) 
+  if ( et_sum > SUM_ET && max_et > MAX_ET )
     write_tv(towers,output);
 }
 
@@ -187,20 +194,25 @@ void mc_sim(const char* input,const char* output) {
   string outname = string(output);
   outname = outname.substr(0,outname.find(".txt"));
   for (int ievent = 0; reader.Next(); ievent++) {
+    if (ievent >= NEVENTS && NEVENTS != -1) break;
     string fname = outname + "_" + to_string(ievent);
     float posEtaSect[CETA][360];
     float negEtaSect[CETA][360];
 
+    float max_et = 0;
     for (int icrystal = 0; icrystal < *nCrystal; icrystal++) {
       float et = crystal_et[icrystal];
       int ieta = crystal_ieta[icrystal];
       int iphi = crystal_iphi[icrystal];
 
+      if (et > max_et) max_et = et;
+
       if ( ieta < 0 )    negEtaSect[abs(ieta)-1][iphi-1] = et;
       else if (ieta > 0) posEtaSect[    ieta -1][iphi-1] = et;
     }
+    if (max_et < MAX_ET) continue;
     // For pos & neg eta together
-    for (int irct = 0; irct < 72; irct++) {
+    for (int irct = 0; irct < 36; irct++) {
       float posRCT[CETA][CPHI];
       float negRCT[CETA][CPHI];
       for (int ieta = 0; ieta < CETA; ieta++) {
@@ -213,7 +225,6 @@ void mc_sim(const char* input,const char* output) {
       process_card(posRCT,(fname+"_pos"+to_string(irct)+".txt").c_str());
       process_card(negRCT,(fname+"_neg"+to_string(irct)+".txt").c_str());
     }
-    break;
   }
 }
 
