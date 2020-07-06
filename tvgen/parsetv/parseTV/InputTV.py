@@ -5,7 +5,7 @@ class Crystal:
         # self.binary = binary
         self.energy = int( binary[4:14],2 )
         self.timing = int( binary[1:4],2 )
-        self.spike = int( binary[:1] )
+        self.spike = int( binary[:1],2 )
         self.eta = eta
         self.phi = phi
     def __str__(self): return "({energy},{timing},{spike},{eta},{phi})".format(**vars(self))
