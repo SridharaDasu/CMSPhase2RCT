@@ -1,7 +1,7 @@
 ## Generating RCT TV from MC Simulated Samples
 Use make to compile the tvgen script to take a TTree with crystal information and generate an RCT TV.
 
-The input root file is created using CMSSW Offline code that can be found here: [CrystalAnalyzer](https://github.com/ekoenig4/CrystalAnalyzer).
+The input root file is created using CMSSW Offline code that can be found here: [TVGenAnalyzer](https://github.com/ekoenig4/TVGenAnalyzer).
 
 Follow the instructions to generate an output.root file and move that to the tvgen area.
 
