@@ -5,5 +5,5 @@ tvgen
 *.o
 *.root
 !tvgen/
-tvgen/data/
+tvgen/rawdata/
 *.pyc

@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "TFile.h"
+#include "TChain.h"
 #include "TTreeReader.h"
 #include "TTreeReaderValue.h"
 #include "TTreeReaderArray.h"
@@ -20,6 +21,9 @@ using namespace std;
 #define MAX_ET 100  // Maximum Et Crystal cut in RCT for writing MC Sim TV
 #define SUM_ET 100 // Sum Et cut in RCT for writing MC Sim TV
 #define NEVENTS -1 // Number of Events to run over for MC Sim TV
+#define NTV 500 // Number of TV to generate
+#define EPATTERN 0 // Set to 1 to use sample_tv_in_{ievent}_{pos/neg}{irct}, 0 for sample_tv_in_{itv}
+#define GZIP 1 // GZIP files together into one archive
 
 /* ECAL crystal object definition */
 struct Crystal {
@@ -158,7 +162,7 @@ void write_tv(Tower towers[ETA][PHI],const char* fname="test_in.txt",bool verbos
   link_in.write(fname);
 }
 
-void process_card(float rct[CETA][CPHI],const char* output) {
+void process_card(float rct[CETA][CPHI],const char* output,int &itv) {
   Tower towers[ETA][PHI];
   // float max_crystal = 0;
   // for (int ieta = 0; ieta < CETA; ieta++)
@@ -179,23 +183,44 @@ void process_card(float rct[CETA][CPHI],const char* output) {
       towers[teta][tphi].crystals[ceta][cphi].energy = et;
     }
   }
-  if ( et_sum > SUM_ET && max_et > MAX_ET )
+  if ( et_sum > SUM_ET && max_et > MAX_ET ){
     write_tv(towers,output);
+    itv++;
+  }
 }
 
-void mc_sim(const char* input,const char* output) {
-  TFile* tfile = new TFile(input);
-  TTreeReader reader("analyzer/tree",tfile);
+void gzip_tv(string pattern,const char* archive) {
+  if (archive == 0) return;
+  printf("Compressing %s* to %s\n",pattern.c_str(),archive);
+  const char* command = ("tar -czvf " + string(archive) + " " + pattern + "*").c_str();
+  system(command);
+}
+
+void mc_sim(vector<const char*> inputs,const char* output,const char* archive=0) {
+  if ( string(output).find(".root") != string::npos ) {
+    cout << output << " not valid tv file name" << endl;
+    return;
+  }
+  // TFile* tfile = new TFile(input);
+  TChain* tchain = new TChain("analyzer/tree");
+  for (auto input : inputs) tchain->Add(input);
+  TTreeReader reader(tchain);
   TTreeReaderValue<int> nCrystal(reader,"nCrystal");
   TTreeReaderArray<float> crystal_et(reader,"crystal_Et");
   TTreeReaderArray<int> crystal_ieta(reader,"crystal_iEta");
   TTreeReaderArray<int> crystal_iphi(reader,"crystal_iPhi");
 
+  printf("Running %i files | %i events \noutput pattern: %s\n",inputs.size(),tchain->GetEntries(),output);
   string outname = string(output);
   outname = outname.substr(0,outname.find(".txt"));
+  int itv = 0;
   for (int ievent = 0; reader.Next(); ievent++) {
     if (ievent >= NEVENTS && NEVENTS != -1) break;
-    string fname = outname + "_" + to_string(ievent);
+    if (itv >= NTV && NTV != -1) break;
+    string fname = outname;
+    if (EPATTERN) fname += "_" + to_string(ievent);
+    else fname += "_" + to_string(itv);
+    
     float posEtaSect[CETA][360];
     float negEtaSect[CETA][360];
 
@@ -222,10 +247,19 @@ void mc_sim(const char* input,const char* output) {
 	  negRCT[ieta][iphi] = negEtaSect[ieta][rphi];
 	}
       }
-      process_card(posRCT,(fname+"_pos"+to_string(irct)+".txt").c_str());
-      process_card(negRCT,(fname+"_neg"+to_string(irct)+".txt").c_str());
+      string posfname = fname;
+      string negfname = fname;
+      if (EPATTERN) {
+	posfname += "_pos"+to_string(irct);
+	negfname += "_neg"+to_string(irct);
+      }
+      
+      process_card(posRCT,(fname+".txt").c_str(),itv);
+      process_card(negRCT,(fname+".txt").c_str(),itv);
     }
   }
+  printf("Finished Processesing MC: %i TV Written\n",itv);
+  gzip_tv(outname,archive);
 }
 
 void test() {
@@ -266,8 +300,17 @@ void test() {
 
 int main(int argn, char *argp[]) {
   if (argn == 1) test();
-  else if (argn == 3) {
-    mc_sim(argp[1],argp[2]);
+  else if (argn >= 3) {
+    vector<const char*> inputs;
+    const char* output=0;
+    const char* archive=0;
+    for (int i = 1; i < argn; i++) {
+      string arg = string(argp[i]);
+      if ( arg.find(".root") != string::npos ) inputs.push_back(argp[i]);
+      else if ( arg.find(".txt") != string::npos ) output = argp[i];
+      else if ( arg.find(".tar.gz") != string::npos ) archive = argp[i];
+    }
+    mc_sim(inputs,output,archive);
   }
 
   return 0;
