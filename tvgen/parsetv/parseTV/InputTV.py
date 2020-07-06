@@ -1,7 +1,3 @@
-import os
-from argparse import ArgumentParser
-import math
-
 T_ETA,T_PHI = 17,2
 C_ETA,C_PHI = 5,5
 class Crystal:
@@ -90,16 +86,3 @@ class InputTV:
             )
             for i in range(len(links[0])):
                 tv.write('  0x00 '.join([ link[i] for link in links ])+'\n')
-
-parser = ArgumentParser()
-parser.add_argument("-i","--input",type=InputTV,nargs="*")
-parser.add_argument("-o","--output",default="tv_plots.root")
-args = parser.parse_args()
-
-if __name__ == "__main__":
-    intv = args.input[0]
-    intv.write("remade_tv.txt")
-    # crystals = intv.unwrap()
-    # for tower in intv.towers: print tower
-    # print "nTowers:",len(intv.towers)
-    # print "nCrystals:",len(crystals)

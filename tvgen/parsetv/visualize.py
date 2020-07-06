@@ -47,6 +47,6 @@ def DrawTV(tv):
         lines.append(line)
     c.Write()
     
-output = TFile(parse.args.output,"recreate")
+output = TFile(parse.args.write,"recreate")
 for tv in parse.args.input: DrawTV(tv)
 output.Close()

@@ -28,11 +28,11 @@ Any number of root files can be passed into the script with the final argument b
 ## Visualizing TV
 Once a tv is created the parsetv project is used to make plots to be able to visualize the signiture.
 ````
-python parsetv/visualize.py -i path/to/tv -o tv_plot_output.root
+python parsetv/visualize.py -i path/to/tv -w tv_plot_output.root
 ````
 Any number of tv can be passed to parsetv/visualize.py with the -i option.
 
-All plots will be put inside the tv_plot_output.root file (name specified by -o option)
+All plots will be put inside the tv_plot_output.root file (name specified by -w option)
 
 ## Already made TV
 A large number of TV have already been made using the root files in datasets.txt

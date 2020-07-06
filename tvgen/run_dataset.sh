@@ -12,8 +12,13 @@ plot() {
 	echo data/${sample}_tv_in.txt not found
 	return
     fi
-    # python parsetv/visualize.py -i rawdata/${sample}_tv_in* -o visualize/${sample}_tv_plots.root
-    dump_tfile visualize/${sample}_tv_plots.root -o ~/public_html/Trigger/MC_RCT_TV/${sample}_tv_plots.pdf -n 2
+    python parsetv/visualize.py -i rawdata/${sample}_tv_in* -w visualize/${sample}_tv_plots.root
+
+    if [[ -e dump_tfile ]]; then
+	# Personal script for dumping tfile contents into pdf
+	# /afs/hep.wisc.edu/home/ekoenig4/bin/dump_tfile
+	dump_tfile visualize/${sample}_tv_plots.root -o ~/public_html/Trigger/MC_RCT_TV/${sample}_tv_plots.pdf -n 2
+    fi
 }
 
 for d in $(cat datasets.txt); do
