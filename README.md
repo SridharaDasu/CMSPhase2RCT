@@ -2,9 +2,11 @@
 
 Checkout existing RCT code and APx Core Firmware connector from:
 ```
-git clone git@github.com:SridharaDasu/CMSPhase2RCT.git
+cmsrel CMSSW_10_2_10
+cd CMSSW_10_2_10/src
+cmsenv
+git clone git@github.com:ekoenig4/CMSPhase2RCT.git
 cd CMSPhase2RCT
-git checkout RCT-Gen2-384-Bit 
 source setEnv.sh #(uwlogin/beck independent)
 ```
 
