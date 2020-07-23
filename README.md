@@ -25,22 +25,28 @@ vivado_hls -f run_hls.tcl csim=1 tv_in=$PWD/data/test_in.txt tv_out=$PWD/data/te
 
 ## Sythesis
 
-For HLS synthesis and exporting RTL:
+For HLS synthesis and exporting RTL of first-stage SLR processing of 17x2 trigger towers:
 ```bash
 cd $AP_FW_BASE_DIR/CMSPhase2RCT/17x2/hls/vivado_hls/
 vivado_hls -f run_hls.tcl synth=1 export=1 
+```
+For HLS synthesis and exporting RTL of second-stage SLR processing of 17x4 trigger towers:
+```bash
 cd $AP_FW_BASE_DIR/CMSPhase2RCT/17x4/hls/vivado_hls/
 vivado_hls -f run_hls.tcl synth=1 export=1 
 ```
 
 ## Test Vectors
 
-To make test vectors (see tvgen/README.md for more details):
+To make test vectors (see tvgen/README.md for more details - first stage):
 ```bash
 cd $AP_FW_BASE_DIR/17x2/tvgen
 cmsenv
 make
 ./tvgen output*.root test_tv_in.txt
+```
+To make test vectors (see tvgen/README.md for more details - second stage):
+```bash
 cd $AP_FW_BASE_DIR/17x4/tvgen
 cmsenv
 make
@@ -49,10 +55,13 @@ make
 
 ## The whole enchilada
 
-Simulation, Synthesis, Verification and RTL generation in Vivado HLS (takes 2 hours):
+Simulation, Synthesis, Verification and RTL generation in Vivado HLS (takes 2 hours) - first stage:
 ```bash
 cd $AP_FW_BASE_DIR/CMSPhase2RCT/17x2/hls/vivado_hls/
 vivado_hls -f run_hls.tcl csim=1 synth=1 cosim=1 export=1 tv_in=$PWD/data/test_in.txt tv_out=$PWD/data/test_out.txt tv_ref=$PWD/data/test_out_ref.txt
+```
+Simulation, Synthesis, Verification and RTL generation in Vivado HLS (takes 2 hours) - second stage:
+```bash
 cd $AP_FW_BASE_DIR/CMSPhase2RCT/17x4/hls/vivado_hls/
 vivado_hls -f run_hls.tcl csim=1 synth=1 cosim=1 export=1 tv_in=$PWD/data/test_in.txt tv_out=$PWD/data/test_out.txt tv_ref=$PWD/data/test_out_ref.txt
 ```
