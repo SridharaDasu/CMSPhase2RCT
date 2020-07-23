@@ -1,0 +1,8 @@
+/hdfs/store/user/ekoenig/Trigger/RCT_TVGen/GluGluHToBB_M125_14TeV_powheg_pythia8/20200703_RCT_TV_ggHBB-PU200/200703_233914/0000/
+/hdfs/store/user/ekoenig/Trigger/RCT_TVGen/GluGluHToGG_M125_14TeV_powheg_pythia8/20200703_RCT_TV_ggHGG-PU200/200703_233823/0000/
+/hdfs/store/user/ekoenig/Trigger/RCT_TVGen/GluGluHToTauTau_M125_14TeV_powheg_pythia8/20200703_RCT_TV_ggHTT-PU200/200703_233731/0000/
+/hdfs/store/user/ekoenig/Trigger/RCT_TVGen/NeutrinoGun_E_10GeV/20200703_RCT_TV_minBias-PU200/200703_233552/0000/
+/hdfs/store/user/ekoenig/Trigger/RCT_TVGen/QCD_Pt-15To7000_TuneCP5_Flat_14TeV-pythia8/20200703_RCT_TV_QCD-PU200/200703_233642/0000/
+/hdfs/store/user/ekoenig/Trigger/RCT_TVGen/VBFHToBB_M-125_14TeV_powheg_pythia8_weightfix/20200703_RCT_TV_VBFHBB-PU200/200703_234147/0000/
+/hdfs/store/user/ekoenig/Trigger/RCT_TVGen/VBFHToGG_M-125_14TeV_powheg_pythia8/20200703_RCT_TV_VBFHGG-PU200/200703_234057/0000/
+/hdfs/store/user/ekoenig/Trigger/RCT_TVGen/VBFHToTauTau_M125_14TeV_powheg_pythia8/20200703_RCT_TV_VBFHTT-PU200/200703_234005/0000/

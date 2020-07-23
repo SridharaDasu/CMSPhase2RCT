@@ -98,6 +98,19 @@ class CrystalGroup {
       return Crystal();
     }
   }
+
+#ifndef __SYNTHESIS__
+  string toString() {
+    string s= " ******  crystal energies ******* \n";
+    for(size_t c=0; c<25; c++){
+      if(this->crystals[c] > 0)
+	s += to_string(c) + ": " + to_string(this->crystals[c]) + "\n";
+    }
+  return s;
+  }
+#endif
+ 
+
  private:
   Crystal crystals[25];
 };
@@ -158,6 +171,6 @@ class Tower {
 ap_uint<3> getPeakBinOf5(ap_uint<12> et[5], ap_uint<16> etSum);
 void makeTower(CrystalGroup crystals, Tower &tower);
 ap_uint<32> makeECALSummary(Tower towerLevelECALSummary[N_INPUT_LINKS]);
-void stitchNeighbors(Tower Ai, Tower Bi, Tower &Ao, Tower &B);
+void stitchNeighbors(bool stitch, Tower Ai, Tower Bi, Tower &Ao, Tower &B);
 
 #endif /*!__TOWERMAKER_H__*/
