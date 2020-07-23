@@ -1,12 +1,11 @@
 # APx Gen2 Phase2 RCT
 
-Checkout existing RCT code and APx Core Firmware connector from:
+Checkout existing RCT code on uwlogin.cern.ch:/data/$USER/ or g25n01.hep.wisc.edu:/nfs_scratch/$USER/:
 ```
 git clone --recursive ssh://git@gitlab.cern.ch:7999/asvetek/phase2-rct.git -b 384b
-git clone git@github.com:SridharaDasu/CMSPhase2RCT.git
 cd CMSPhase2RCT
 git checkout RCT-Gen2-384-Bit 
-source setEnv.sh #(uwlogin/beck independent)
+source setEnv.sh #(uwlogin.cern.ch or g25n01.hep.wisc.edu independent)
 ```
 
 ## Simulation
@@ -35,8 +34,10 @@ vivado_hls -f run_hls.tcl csim=1 synth=1 cosim=1 export=1 tv_in=$PWD/data/test_i
 
 ## The nightcap
 
-Making the bit file for APd (takes hours):
+Checkout APx Core Firmware connector and Make a bit file for APd (takes hours):
 ```
+cd $AP_FW_BASE_DIR/
+git clone git@github.com:SridharaDasu/CMSPhase2RCT.git
 cd $AP_FW_BASE_DIR/phase2-rct/
 mkdir build
 make
@@ -44,6 +45,6 @@ make
 
 ## GUI access
 
-Follow instructions at twiki - adapt suitably for usage on beck.hep.wisc.edu: 
+Follow instructions at twiki - adapt suitably for usage on g25n01.hep.wisc.edu: 
 https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1TriggerPhase2HLSProjects
 
