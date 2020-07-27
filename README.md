@@ -79,5 +79,23 @@ make
 
 ## GUI access
 
-Follow instructions at twiki - adapt suitably for usage on g25n01.hep.wisc.edu: 
-https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1TriggerPhase2HLSProjects
+For g25n01.hep.wisc.edu: 
+
+1) Activate your WiscVPN - Download from : https://it.wisc.edu/services/wiscvpn/
+2) Use ssh to connect to g25n01.hep.wisc.edu
+3) Check if you have a VNC serrver running:  vncserver -list
+4) If it is running note the window <:n> where n is the window number
+5) If it is NOT running, start one, vncserver -geometry 1440x900
+6) Use VNC Viewer client on your laptop to connect to g25n01.hep.wisc.edu<:n> - where n is the window number.
+6) Once connected open a Terminal using the linux gui
+7) Navigate to $AP_FW_BASE_DIR and cmsenv
+8) cd $AP_FW_BASE_DIR/CMSPhase2RCT/17x2/hls/vivado_hls/
+9) vivado_hls
+10) In the GUI open the directory $AP_FW_BASE_DIR/CMSPhase2RCT/17x2/hls/vivado_hls/proj
+
+Click away to use the vivado_HLS
+
+Similar method can be used for Vivado itself, if necessary to inspect the bitfile production stage fully from phase2-rct directory.
+
+Try to avoid over using the GUI as it is resource intensive. Secondly, do not run multiple copies of vncserver. "vncserver -list" shows you the versions that are rrunning.  You can kill them, if they are unuseable using "vncserver -kill".
+
