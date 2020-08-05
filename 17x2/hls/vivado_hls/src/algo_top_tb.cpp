@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
 	hls::stream<axiword384> link_in[N_INPUT_LINKS];
-	hls::stream<axiword384> link_out[N_OUTPUT_LINKS];
+	hls::stream<axiword576> link_out[N_OUTPUT_LINKS];
 	size_t loop_count = 1;
 
 	if (arguments.readfile) {
@@ -106,25 +106,25 @@ int main(int argc, char **argv) {
 	}
 
 	APxLinkData datafile_out(N_OUTPUT_LINKS);
-	ap_uint<384> bigdataword[N_OUTPUT_LINKS];
-	axiword384 r384;
+	ap_uint<576> outDataWord_576b[N_OUTPUT_LINKS];
+	axiword576 r576;
 	for (size_t i = 0, low = 0, high = 63; i < loop_count * N_OUTPUT_WORDS_PER_FRAME; i++, low += 64, high += 64) {
 	  for (size_t k = 0; k < N_OUTPUT_LINKS; k++) {
 	    if ((i % N_OUTPUT_WORDS_PER_FRAME) == 0) {
 	      if (!link_out[k].empty()) {
-		r384 = link_out[k].read();
-		bigdataword[k] = r384.data;
+		r576 = link_out[k].read();
+		outDataWord_576b[k] = r576.data;
 	      }
 	    }
 	    axiword64 r;
-	    r.user = r384.user;
-	    if (high == 383) {
+	    r.data = (uint64_t)outDataWord_576b[k].range(high, low);
+	    r.user = r576.user;
+	    if (high == 575) {
 	      r.last = 1;
 	    }
 	    else {
 	      r.last = 0;
 	    }
-	    r.data = bigdataword[k].range(high, low);
 	    datafile_out.add(i, k, {r.user, r.data});
 	  }
 	}

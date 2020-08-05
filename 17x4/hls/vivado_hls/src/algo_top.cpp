@@ -3,184 +3,126 @@
 #include <algorithm>
 #include <utility>
 
-#include "TowerMaker.h"
+#include "../../../../include/objects.h"
+#include "../../../../include/stitchTower.h"
 
 using namespace std;
 using namespace algo;
 
-void processOutputData(hls::stream<axiword> &link, ap_uint<384> bigdataword) {
+void unpackInput(hls::stream<axiword576> &link, Tower tower[TOWERS_IN_ETA]) {
 #pragma HLS INTERFACE axis port=link
-#pragma HLS PIPELINE II=6
-#pragma HLS INLINE
-  axiword r;
-  r.user = 0;
-  r.last = 1;
-  r.data = bigdataword;
-  link.write(r);
-}
-
-// Each input link carries the information of a 5x5 region
-// Last 16-bits are reserved for CRC
-void processInputData(hls::stream<axiword> &link, CrystalGroup &crystalGroup) {
-#pragma HLS INTERFACE axis port=link
-#pragma HLS PIPELINE II=6
+#pragma HLS PIPELINE II=9
 #pragma HLS INLINE
 #ifndef __SYNTHESIS__
   // Avoid simulation warnings
   if (link.empty()) return;
 #endif
-  ap_uint<384> bigdataword = link.read().data;
-  crystalGroup = CrystalGroup(bigdataword);
+  ap_uint<576> word_576b_;
+            
+  word_576b_ = link.read().data;
+            
+  tower[0]  = Tower(word_576b_( 31,   0));
+  tower[1]  = Tower(word_576b_( 63,  32));
+  tower[2]  = Tower(word_576b_( 95,  64));
+  tower[3]  = Tower(word_576b_(127,  96));
+  tower[4]  = Tower(word_576b_(159, 128));
+  tower[5]  = Tower(word_576b_(191, 160));
+  tower[6]  = Tower(word_576b_(223, 192));
+  tower[7]  = Tower(word_576b_(255, 224));
+  tower[8]  = Tower(word_576b_(287, 256));
+  tower[9]  = Tower(word_576b_(319, 288));
+  tower[10] = Tower(word_576b_(351, 320));
+  tower[11] = Tower(word_576b_(383, 352));
+  tower[12] = Tower(word_576b_(415, 384));
+  tower[13] = Tower(word_576b_(447, 416));
+  tower[14] = Tower(word_576b_(479, 448));
+  tower[15] = Tower(word_576b_(511, 480));
+  tower[16] = Tower(word_576b_(543, 512));
+  
   return;
 }
 
-
-void stitchInEta1(Tower towerLevelECALSummary[N_INPUT_LINKS], Tower etaStitchedE[N_INPUT_LINKS]) {
-#pragma HLS ARRAY_PARTITION variable=towerLevelECALSummary
-#pragma HLS ARRAY_PARTITION variable=etaStitched
-#pragma HLS PIPELINE II=6
-  stitchNeighbors(0, towerLevelECALSummary[0], towerLevelECALSummary[1], etaStitchedE[0], etaStitchedE[1]);
-  stitchNeighbors(0, towerLevelECALSummary[2], towerLevelECALSummary[3], etaStitchedE[2], etaStitchedE[3]);
-  stitchNeighbors(0, towerLevelECALSummary[4], towerLevelECALSummary[5], etaStitchedE[4], etaStitchedE[5]);
-  stitchNeighbors(0, towerLevelECALSummary[6], towerLevelECALSummary[7], etaStitchedE[6], etaStitchedE[7]);
-  stitchNeighbors(0, towerLevelECALSummary[8], towerLevelECALSummary[9], etaStitchedE[8], etaStitchedE[9]);
-  stitchNeighbors(0, towerLevelECALSummary[10], towerLevelECALSummary[11], etaStitchedE[10], etaStitchedE[11]);
-  stitchNeighbors(0, towerLevelECALSummary[12], towerLevelECALSummary[13], etaStitchedE[12], etaStitchedE[13]);
-  stitchNeighbors(0, towerLevelECALSummary[14], towerLevelECALSummary[15], etaStitchedE[14], etaStitchedE[15]);
-  etaStitchedE[16] = towerLevelECALSummary[16];
-  
-  stitchNeighbors(0, towerLevelECALSummary[17], towerLevelECALSummary[18], etaStitchedE[17], etaStitchedE[18]);
-  stitchNeighbors(0, towerLevelECALSummary[19], towerLevelECALSummary[20], etaStitchedE[19], etaStitchedE[20]);
-  stitchNeighbors(0, towerLevelECALSummary[21], towerLevelECALSummary[22], etaStitchedE[21], etaStitchedE[22]);
-  stitchNeighbors(0, towerLevelECALSummary[23], towerLevelECALSummary[24], etaStitchedE[23], etaStitchedE[24]);
-  stitchNeighbors(0, towerLevelECALSummary[25], towerLevelECALSummary[26], etaStitchedE[25], etaStitchedE[26]);
-  stitchNeighbors(0, towerLevelECALSummary[27], towerLevelECALSummary[28], etaStitchedE[27], etaStitchedE[28]);
-  stitchNeighbors(0, towerLevelECALSummary[29], towerLevelECALSummary[30], etaStitchedE[29], etaStitchedE[30]);
-  stitchNeighbors(0, towerLevelECALSummary[31], towerLevelECALSummary[32], etaStitchedE[31], etaStitchedE[32]);
-  etaStitchedE[33] = towerLevelECALSummary[33];
+bool packOutput(Tower tower[TOWERS_IN_ETA], hls::stream<algo::axiword576> &olink){
+#pragma HLS PIPELINE II=N_OUTPUT_WORDS_PER_FRAME
+#pragma HLS INTERFACE axis port=link
+#pragma HLS INLINE   
+             
+  ap_uint<576> word_576b_;   
+             
+  word_576b_( 31,   0) = (ap_uint<32>) tower[0].data;
+  word_576b_( 63,  32) = (ap_uint<32>) tower[1].data;
+  word_576b_( 95,  64) = (ap_uint<32>) tower[2].data;
+  word_576b_(127,  96) = (ap_uint<32>) tower[3].data;
+  word_576b_(159, 128) = (ap_uint<32>) tower[4].data;
+  word_576b_(191, 160) = (ap_uint<32>) tower[5].data;
+  word_576b_(223, 192) = (ap_uint<32>) tower[6].data;
+  word_576b_(255, 224) = (ap_uint<32>) tower[7].data;
+  word_576b_(287, 256) = (ap_uint<32>) tower[8].data;
+  word_576b_(319, 288) = (ap_uint<32>) tower[9].data;
+  word_576b_(351, 320) = (ap_uint<32>) tower[10].data;
+  word_576b_(383, 352) = (ap_uint<32>) tower[11].data;
+  word_576b_(415, 384) = (ap_uint<32>) tower[12].data;
+  word_576b_(447, 416) = (ap_uint<32>) tower[13].data;
+  word_576b_(479, 448) = (ap_uint<32>) tower[14].data;
+  word_576b_(511, 480) = (ap_uint<32>) tower[15].data;
+  word_576b_(543, 512) = (ap_uint<32>) tower[16].data;
+  word_576b_(575, 544) = (ap_uint<32>) 0;
+             
+  axiword576 r; r.last = 0; r.user = 0;
+  r.data = word_576b_;
+  olink.write(r);
+             
+  return true;
 }
 
-void stitchInEta2(Tower etaStitchedE[N_INPUT_LINKS], Tower etaStitched[N_INPUT_LINKS]) {
-#pragma HLS ARRAY_PARTITION variable=etaStitchedE
-#pragma HLS ARRAY_PARTITION variable=etaStitched
-#pragma HLS PIPELINE II=6
-  etaStitched[0] = etaStitchedE[0];
-  stitchNeighbors(0, etaStitchedE[1], etaStitchedE[2], etaStitched[1], etaStitched[2]);
-  stitchNeighbors(0, etaStitchedE[3], etaStitchedE[4], etaStitched[3], etaStitched[4]);
-  stitchNeighbors(0, etaStitchedE[5], etaStitchedE[6], etaStitched[5], etaStitched[6]);
-  stitchNeighbors(0, etaStitchedE[7], etaStitchedE[8], etaStitched[7], etaStitched[8]);
-  stitchNeighbors(0, etaStitchedE[9], etaStitchedE[10], etaStitched[9], etaStitched[10]);
-  stitchNeighbors(0, etaStitchedE[11], etaStitchedE[12], etaStitched[11], etaStitched[12]);
-  stitchNeighbors(0, etaStitchedE[13], etaStitchedE[14], etaStitched[13], etaStitched[14]);
-  stitchNeighbors(0, etaStitchedE[15], etaStitchedE[16], etaStitched[15], etaStitched[16]);
+void stitchInPhi(Tower stitchedTwr[TOWERS_IN_PHI][TOWERS_IN_ETA], Tower leftTwr[2][TOWERS_IN_ETA], Tower rightTwr[2][TOWERS_IN_ETA]){
+#pragma HLS ARRAY_PARTITION variable=stitchedTwr
+#pragma HLS ARRAY_PARTITION variable=leftTwr
+#pragma HLS ARRAY_PARTITION variable=rightTwr
+#pragma HLS PIPELINE II=9
 
-  etaStitched[17] = etaStitchedE[17];
-  stitchNeighbors(0, etaStitchedE[18], etaStitchedE[19], etaStitched[18], etaStitched[19]);
-  stitchNeighbors(0, etaStitchedE[20], etaStitchedE[21], etaStitched[20], etaStitched[21]);
-  stitchNeighbors(0, etaStitchedE[22], etaStitchedE[23], etaStitched[22], etaStitched[23]);
-  stitchNeighbors(0, etaStitchedE[24], etaStitchedE[25], etaStitched[24], etaStitched[25]);
-  stitchNeighbors(0, etaStitchedE[26], etaStitchedE[27], etaStitched[26], etaStitched[27]);
-  stitchNeighbors(0, etaStitchedE[28], etaStitchedE[29], etaStitched[28], etaStitched[29]);
-  stitchNeighbors(0, etaStitchedE[30], etaStitchedE[31], etaStitched[30], etaStitched[31]);
-  stitchNeighbors(0, etaStitchedE[32], etaStitchedE[33], etaStitched[32], etaStitched[33]);
-}
-
-void stitchInPhi(Tower etaStitched[N_INPUT_LINKS], Tower stitchedTowerLevelECALSummary[N_INPUT_LINKS]) {
-#pragma HLS ARRAY_PARTITION variable=etaStitched
-#pragma HLS ARRAY_PARTITION variable=stitchedTowerLevelECALSummary
-#pragma HLS PIPELINE II=6
-  stitchNeighbors(1, etaStitched[0], etaStitched[17], stitchedTowerLevelECALSummary[0], stitchedTowerLevelECALSummary[17]);
-  stitchNeighbors(1, etaStitched[1], etaStitched[18], stitchedTowerLevelECALSummary[1], stitchedTowerLevelECALSummary[18]);
-  stitchNeighbors(1, etaStitched[2], etaStitched[19], stitchedTowerLevelECALSummary[2], stitchedTowerLevelECALSummary[19]);
-  stitchNeighbors(1, etaStitched[3], etaStitched[20], stitchedTowerLevelECALSummary[3], stitchedTowerLevelECALSummary[20]);
-  stitchNeighbors(1, etaStitched[4], etaStitched[21], stitchedTowerLevelECALSummary[4], stitchedTowerLevelECALSummary[21]);
-  stitchNeighbors(1, etaStitched[5], etaStitched[22], stitchedTowerLevelECALSummary[5], stitchedTowerLevelECALSummary[22]);
-  stitchNeighbors(1, etaStitched[6], etaStitched[23], stitchedTowerLevelECALSummary[6], stitchedTowerLevelECALSummary[23]);
-  stitchNeighbors(1, etaStitched[7], etaStitched[24], stitchedTowerLevelECALSummary[7], stitchedTowerLevelECALSummary[24]);
-  stitchNeighbors(1, etaStitched[8], etaStitched[25], stitchedTowerLevelECALSummary[8], stitchedTowerLevelECALSummary[25]);
-  stitchNeighbors(1, etaStitched[9], etaStitched[26], stitchedTowerLevelECALSummary[9], stitchedTowerLevelECALSummary[26]);
-  stitchNeighbors(1, etaStitched[10], etaStitched[27], stitchedTowerLevelECALSummary[10], stitchedTowerLevelECALSummary[27]);
-  stitchNeighbors(1, etaStitched[11], etaStitched[28], stitchedTowerLevelECALSummary[11], stitchedTowerLevelECALSummary[28]);
-  stitchNeighbors(1, etaStitched[12], etaStitched[29], stitchedTowerLevelECALSummary[12], stitchedTowerLevelECALSummary[29]);
-  stitchNeighbors(1, etaStitched[13], etaStitched[30], stitchedTowerLevelECALSummary[13], stitchedTowerLevelECALSummary[30]);
-  stitchNeighbors(1, etaStitched[14], etaStitched[31], stitchedTowerLevelECALSummary[14], stitchedTowerLevelECALSummary[31]);
-  stitchNeighbors(1, etaStitched[15], etaStitched[32], stitchedTowerLevelECALSummary[15], stitchedTowerLevelECALSummary[32]);
-  stitchNeighbors(1, etaStitched[16], etaStitched[33], stitchedTowerLevelECALSummary[16], stitchedTowerLevelECALSummary[33]);
-}
-
-void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> link_out[N_OUTPUT_LINKS]) {
-#pragma HLS INTERFACE axis port=link_in
-#pragma HLS INTERFACE axis port=link_out
-#pragma HLS PIPELINE II=6
-
-  // Step First: Unpack to make crystals
-  CrystalGroup crystals[N_INPUT_LINKS];
-#pragma HLS ARRAY_PARTITION variable=crystals
- makeCrystalsLoop: for (size_t iLink = 0; iLink < N_INPUT_LINKS; iLink++) {
+  for(size_t eta=0; eta<TOWERS_IN_ETA; eta++){
 #pragma HLS UNROLL
-    processInputData(link_in[iLink], crystals[iLink]);
+    //stitchNeighbors(stitch_in_phi, stitchedTwr[1][eta], stitchedTwr[2][eta], leftTwr[1][eta], rightTwr[0][eta]);
+    stitchNeighbors(1, stitchedTwr[1][eta], stitchedTwr[2][eta], leftTwr[1][eta], rightTwr[0][eta]);
+    stitchedTwr[0][eta] = leftTwr[0][eta];
+    stitchedTwr[3][eta] = rightTwr[1][eta];
   }
 
-  // Make towers - operations not using tower pairs
-  Tower towerLevelECALSummary[N_INPUT_LINKS];
-#pragma HLS ARRAY_PARTITION variable=towerLevelECALSummary
- makeTowersLoop: for (size_t iLink = 0; iLink < N_INPUT_LINKS; iLink++) {
+  return;
+}
+
+void algo_top(hls::stream<axiword576> link_in[N_INPUT_LINKS], hls::stream<axiword576> link_out[N_OUTPUT_LINKS]) {
+#pragma HLS INTERFACE axis port=link_in
+#pragma HLS INTERFACE axis port=link_out
+#pragma HLS PIPELINE II=9
+
+  // Step First: Unpack to make
+  Tower towers17x2Left[2][TOWERS_IN_ETA];
+  Tower towers17x2Right[2][TOWERS_IN_ETA];
+
+#pragma HLS ARRAY_PARTITION variable=towers17x2Left
+#pragma HLS ARRAY_PARTITION variable=towers17x2Right
+
+unpackLoop: for (size_t iLink = 0; iLink < N_INPUT_LINKS/2; iLink++) {
 #pragma HLS UNROLL
-    makeTower(crystals[iLink], towerLevelECALSummary[iLink]);
+    unpackInput(link_in[iLink],   towers17x2Left[iLink]);
+    unpackInput(link_in[iLink+2], towers17x2Right[iLink+2]);
   }
 
   // Compute total ECAL ET
-  ap_uint<32> ecalSummary = makeECALSummary(towerLevelECALSummary);
+//  ap_uint<32> ecalSummary = makeECALSummary(towerLevelECALSummary);
 
   // Stitch neighboring towers
-  Tower etaStitchedE[N_INPUT_LINKS];
-#pragma HLS ARRAY_PARTITION variable=etaStitchedE
-  
-  stitchInEta1(towerLevelECALSummary, etaStitchedE);
+  Tower stitchedTower[TOWERS_IN_PHI][TOWERS_IN_ETA];
+#pragma HLS ARRAY_PARTITION variable=stitchedTower
 
-  Tower etaStitched[N_INPUT_LINKS];
-#pragma HLS ARRAY_PARTITION variable=etaStitched
-
-  stitchInEta2(etaStitchedE, etaStitched);
-
-  Tower stitchedTowerLevelECALSummary[N_INPUT_LINKS];
-#pragma HLS ARRAY_PARTITION variable=stitchedTowerLevelECALSummary
-
-  stitchInPhi(etaStitched, stitchedTowerLevelECALSummary);
+  stitchInPhi(stitchedTower, towers17x2Left, towers17x2Right);
 
   // Step Last: Pack and write the output
-  size_t start = 0;
-  ap_uint<384> bigdataword;
- link0OutputLoop: for (size_t tower = 0; tower < 12; tower++) {
-#pragma HLS UNROLL
-    size_t end = start + 31;
-    bigdataword.range(end, start) = stitchedTowerLevelECALSummary[tower];
-    start += 32;
+  for (size_t i = 0; i < N_OUTPUT_LINKS; i++) {
+#pragma LOOP UNROLL
+    packOutput(stitchedTower[i], link_out[i]);
   }
-  processOutputData(link_out[0], bigdataword);
-  start = 0;
- link1OutputLoop: for (size_t tower = 12; tower < 24; tower++) {
-#pragma HLS UNROLL
-    size_t end = start + 31;
-    bigdataword.range(end, start) = stitchedTowerLevelECALSummary[tower];
-    start += 32;
-  }
-  processOutputData(link_out[1], bigdataword);
-  start = 0;
- link2OutputLoop: for (size_t tower = 24; tower < 34; tower++) {
-#pragma HLS UNROLL
-    size_t end = start + 31;
-    bigdataword.range(end, start) = stitchedTowerLevelECALSummary[tower];
-    start += 32;
-  }
-  bigdataword.range(383, start) = 0;
-  processOutputData(link_out[2], bigdataword);
-  start = 0;
- link3OutputLoop: for (size_t tower = 0; tower < 12; tower++) {
-#pragma HLS UNROLL
-    size_t end = start + 31;
-    bigdataword.range(end, start) = ecalSummary;
-  }
-  processOutputData(link_out[3], bigdataword);
 
 }

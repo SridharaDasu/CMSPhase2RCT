@@ -8,11 +8,14 @@
 using namespace std;
 using namespace algo;
 
-void processOutputData(hls::stream<axiword> &link, ap_uint<384> bigdataword) {
+
+//Each output link carries 576b of information
+//17 towers can be fit in one link (32*17=544)
+void processOutputData(hls::stream<axiword576> &link, ap_uint<576> bigdataword) {
 #pragma HLS INTERFACE axis port=link
-#pragma HLS PIPELINE II=6
+#pragma HLS PIPELINE II=9
 #pragma HLS INLINE
-  axiword r;
+  axiword576 r;
   r.user = 0;
   r.last = 1;
   r.data = bigdataword;
@@ -21,10 +24,11 @@ void processOutputData(hls::stream<axiword> &link, ap_uint<384> bigdataword) {
 
 // Each input link carries the information of a 5x5 region
 // Last 16-bits are reserved for CRC
-void processInputData(hls::stream<axiword> &link, CrystalGroup &crystalGroup) {
+void processInputData(hls::stream<axiword384> &link, CrystalGroup &crystalGroup) {
 #pragma HLS INTERFACE axis port=link
 #pragma HLS PIPELINE II=6
 #pragma HLS INLINE
+
 #ifndef __SYNTHESIS__
   // Avoid simulation warnings
   if (link.empty()) return;
@@ -48,7 +52,7 @@ void stitchInEta1(Tower towerLevelECALSummary[N_INPUT_LINKS], Tower etaStitchedE
   stitchNeighbors(0, towerLevelECALSummary[12], towerLevelECALSummary[13], etaStitchedE[12], etaStitchedE[13]);
   stitchNeighbors(0, towerLevelECALSummary[14], towerLevelECALSummary[15], etaStitchedE[14], etaStitchedE[15]);
   etaStitchedE[16] = towerLevelECALSummary[16];
-  
+
   stitchNeighbors(0, towerLevelECALSummary[17], towerLevelECALSummary[18], etaStitchedE[17], etaStitchedE[18]);
   stitchNeighbors(0, towerLevelECALSummary[19], towerLevelECALSummary[20], etaStitchedE[19], etaStitchedE[20]);
   stitchNeighbors(0, towerLevelECALSummary[21], towerLevelECALSummary[22], etaStitchedE[21], etaStitchedE[22]);
@@ -108,7 +112,7 @@ void stitchInPhi(Tower etaStitched[N_INPUT_LINKS], Tower stitchedTowerLevelECALS
   stitchNeighbors(1, etaStitched[16], etaStitched[33], stitchedTowerLevelECALSummary[16], stitchedTowerLevelECALSummary[33]);
 }
 
-void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> link_out[N_OUTPUT_LINKS]) {
+void algo_top(hls::stream<axiword384> link_in[N_INPUT_LINKS], hls::stream<axiword576> link_out[N_OUTPUT_LINKS]) {
 #pragma HLS INTERFACE axis port=link_in
 #pragma HLS INTERFACE axis port=link_out
 #pragma HLS PIPELINE II=6
@@ -126,7 +130,7 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
 #pragma HLS ARRAY_PARTITION variable=towerLevelECALSummary
  makeTowersLoop: for (size_t iLink = 0; iLink < N_INPUT_LINKS; iLink++) {
 #pragma HLS UNROLL
-    makeTower(crystals[iLink], towerLevelECALSummary[iLink]);
+  makeTower(crystals[iLink], towerLevelECALSummary[iLink]);
   }
 
   // Compute total ECAL ET
@@ -135,7 +139,7 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
   // Stitch neighboring towers
   Tower etaStitchedE[N_INPUT_LINKS];
 #pragma HLS ARRAY_PARTITION variable=etaStitchedE
-  
+
   stitchInEta1(towerLevelECALSummary, etaStitchedE);
 
   Tower etaStitched[N_INPUT_LINKS];
@@ -150,37 +154,24 @@ void algo_top(hls::stream<axiword> link_in[N_INPUT_LINKS], hls::stream<axiword> 
 
   // Step Last: Pack and write the output
   size_t start = 0;
-  ap_uint<384> bigdataword;
- link0OutputLoop: for (size_t tower = 0; tower < 12; tower++) {
+  ap_uint<576> outWord_576b;
+
+ link0OutputLoop: for(size_t tower = 0; tower < 17; tower++) { 
 #pragma HLS UNROLL
-    size_t end = start + 31;
-    bigdataword.range(end, start) = stitchedTowerLevelECALSummary[tower];
-    start += 32;
+  size_t end = start + 31;
+  outWord_576b.range(end, start) = stitchedTowerLevelECALSummary[tower];
+  start += 32;
   }
-  processOutputData(link_out[0], bigdataword);
+  processOutputData(link_out[0], outWord_576b);
+
   start = 0;
- link1OutputLoop: for (size_t tower = 12; tower < 24; tower++) {
+ link1OutputLoop: for(size_t tower = 17; tower < 33; tower++) { 
 #pragma HLS UNROLL
-    size_t end = start + 31;
-    bigdataword.range(end, start) = stitchedTowerLevelECALSummary[tower];
-    start += 32;
+  size_t end = start + 31;
+  outWord_576b.range(end, start) = stitchedTowerLevelECALSummary[tower];
+  start += 32;
   }
-  processOutputData(link_out[1], bigdataword);
-  start = 0;
- link2OutputLoop: for (size_t tower = 24; tower < 34; tower++) {
-#pragma HLS UNROLL
-    size_t end = start + 31;
-    bigdataword.range(end, start) = stitchedTowerLevelECALSummary[tower];
-    start += 32;
-  }
-  bigdataword.range(383, start) = 0;
-  processOutputData(link_out[2], bigdataword);
-  start = 0;
- link3OutputLoop: for (size_t tower = 0; tower < 12; tower++) {
-#pragma HLS UNROLL
-    size_t end = start + 31;
-    bigdataword.range(end, start) = ecalSummary;
-  }
-  processOutputData(link_out[3], bigdataword);
+  outWord_576b.range(575, 544) = ecalSummary;
+  processOutputData(link_out[1], outWord_576b);
 
 }

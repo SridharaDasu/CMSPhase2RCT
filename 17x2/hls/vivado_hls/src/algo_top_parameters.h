@@ -12,7 +12,7 @@
 //#define ALGO_PASSTHROUGH
 
 // Number of data words per processing cycle/frame
-const int N_WORDS_PER_FRAME	= 6;
+const int N_WORDS_PER_FRAME = 6;
 // Word has 64 bits
 const int N_SHORTS_PER_WORD = 4;
 
@@ -23,14 +23,18 @@ const int N_SHORTS_PER_WORD = 4;
 /** More common algorithm definitions, do not remove **/
 // N_INPUT_LINKS and N_OUTPUT_LINKS need to be numerically specified so that wrapper generators work.
 // -- N_INPUT_LINKS = TOWERS_IN_ETA*TOWERS_IN_PHI
-#define N_INPUT_LINKS	34 
-// -- N_OUTPUT_LINKS = TOWERS_IN_PHI*2 //For now we have each eta slice in two output links
-#define N_OUTPUT_LINKS	4
+// -- 17x2 geometry in SLR2 and SLR1
+// -- ECAL(17x2x5x5x14) and HCAL(16x2x16)
+#define N_INPUT_LINKS 34
+// -- N_OUTPUT_LINKS 
+// -- ECAL Info: 2 links (one per phi 17x2)
+// -- HCAL Info: 2 links (one per phi 16x2)
+#define N_OUTPUT_LINKS 2
 
 // 16G inputs
 #define N_INPUT_WORDS_PER_FRAME 6
 // 25G outputs
-#define N_OUTPUT_WORDS_PER_FRAME 6
+#define N_OUTPUT_WORDS_PER_FRAME 9
 
 
 #endif
