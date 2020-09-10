@@ -83,8 +83,7 @@ void stitchInPhi(Tower stitchedTwr[TOWERS_IN_PHI][TOWERS_IN_ETA], Tower leftTwr[
 
   for(size_t eta=0; eta<TOWERS_IN_ETA; eta++){
 #pragma HLS UNROLL
-    //stitchNeighbors(stitch_in_phi, stitchedTwr[1][eta], stitchedTwr[2][eta], leftTwr[1][eta], rightTwr[0][eta]);
-    stitchNeighbors(1, stitchedTwr[1][eta], stitchedTwr[2][eta], leftTwr[1][eta], rightTwr[0][eta]);
+    stitchNeighbors(1, leftTwr[1][eta], rightTwr[0][eta], stitchedTwr[1][eta], stitchedTwr[2][eta]);
     stitchedTwr[0][eta] = leftTwr[0][eta];
     stitchedTwr[3][eta] = rightTwr[1][eta];
   }
@@ -107,7 +106,7 @@ void algo_top(hls::stream<axiword576> link_in[N_INPUT_LINKS], hls::stream<axiwor
 unpackLoop: for (size_t iLink = 0; iLink < N_INPUT_LINKS/2; iLink++) {
 #pragma HLS UNROLL
     unpackInput(link_in[iLink],   towers17x2Left[iLink]);
-    unpackInput(link_in[iLink+2], towers17x2Right[iLink+2]);
+    unpackInput(link_in[iLink+2], towers17x2Right[iLink]);
   }
 
   // Compute total ECAL ET
